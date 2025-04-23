@@ -1,0 +1,17 @@
+.viewinscan_con
+{
+    display: flex;
+    width: 70vw;
+    align-items: end;
+    justify-content: center;
+    margin-top: 30px;
+    flex-direction: column;
+    gap: 20px;
+    margin: 30px 50px;
+    font-weight: bold;
+}
+.view_inscan_date
+{
+    font-size: 14px;
+    width: 80%;
+}

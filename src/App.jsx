@@ -1,14 +1,23 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
+import { isLoggedIn } from "./components/auth";
+import NavBar from "./components/navbar/navbar";
+import QuickMenuBar from "./components/quickmenubar/quickmenubar";
+import PageRoutes from "./pages/routes";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [logged, setLogged] = useState(false);
+  useEffect(() => {
+    if (isLoggedIn()) setLogged(true);
+  }, [isLoggedIn]);
 
   return (
-    <></>
-  )
+    <div className="root">
+      <NavBar />
+      {logged && <QuickMenuBar />}
+      <PageRoutes />
+    </div>
+  );
 }
 
-export default App
+export default App;

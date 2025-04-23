@@ -1,0 +1,29 @@
+.cards_con {
+    background-color: white;
+    border-radius   : 7px;
+    box-shadow      : 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    display         : flex;
+    width           : 180px;
+    height          : 160px;
+    padding         : 10px;
+    flex-direction  : column;
+    justify-content : space-evenly;
+    align-items     : center;
+    gap             : 10px;
+    cursor: pointer;
+
+}
+
+.card_anim {
+    height          : 100%;
+    width           : 100%;
+    align-items     : stretch;
+    background-color: #F5F7FA;
+    border-radius: 10px;
+    object-fit      : cover;
+}
+
+.card_title {
+    font-weight: bold;
+    font-size  : 18px;
+}
