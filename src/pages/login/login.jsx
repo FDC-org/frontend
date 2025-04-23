@@ -46,7 +46,7 @@ const Login = () => {
             .then((r) => console.log(r.data))
             .catch((e) => console.log(e));
           setTimeout(() => {
-            window.location.reload();
+            // window.location.reload();
             navigate("/");
           }, 1000);
         })
