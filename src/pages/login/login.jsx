@@ -45,10 +45,11 @@ const Login = () => {
             })
             .then((r) => console.log(r.data))
             .catch((e) => console.log(e));
-          setTimeout(() => {
-            // window.location.reload();
-            navigate("/");
-          }, 1000);
+            console.log(localStorage.getItem("token"));
+            setTimeout(() => {
+              window.location.reload();
+              navigate("/");
+            }, 1000);
         })
         .catch((e) => {
           seterror("invalid username or password");
