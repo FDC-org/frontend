@@ -7,7 +7,7 @@ import { isLoggedIn } from "../../components/auth";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../../components/spinner/spinner";
 import Toast from "../../components/toast/toast";
-
+import getCookie from "../../components/getCookies";
 
 const Login = () => {
   const [showpassword, setShowpassword] = useState(false);
@@ -24,7 +24,7 @@ const Login = () => {
 
   const login = async () => {
     seterror("");
-    
+
     if (username !== "" && password !== "") {
       setLoginclick(true);
       axios
@@ -37,7 +37,7 @@ const Login = () => {
           setToast(true);
           seterror("success");
           await axios
-            .get(import.meta.env.VITE_API_LINK+"csrf/", {
+            .get(import.meta.env.VITE_API_LINK + "csrf/", {
               withCredentials: true,
               headers: {
                 Authorization: "Token " + localStorage.getItem("token"),
@@ -45,11 +45,13 @@ const Login = () => {
             })
             .then((r) => console.log(r.data))
             .catch((e) => console.log(e));
-            console.log(localStorage.getItem("token"));
-            setTimeout(() => {
-              window.location.reload();
-              navigate("/");
-            }, 1000);
+          console.log(localStorage.getItem("token"));
+          console.log(getCookie());
+
+          setTimeout(() => {
+            window.location.reload();
+            navigate("/");
+          }, 1000);
         })
         .catch((e) => {
           seterror("invalid username or password");
