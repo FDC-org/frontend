@@ -47,7 +47,6 @@ const Login = () => {
             .catch((e) => console.log(e));
           console.log(localStorage.getItem("token"));
           console.log(getCookie());
-
           setTimeout(() => {
             window.location.reload();
             navigate("/");
