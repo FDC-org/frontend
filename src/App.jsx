@@ -14,7 +14,11 @@ function App() {
   return (
     <div className="root">
       <NavBar />
-      {logged && <QuickMenuBar />}
+      {logged && (
+        <>
+          <QuickMenuBar />
+        </>
+      )}
       <PageRoutes />
     </div>
   );

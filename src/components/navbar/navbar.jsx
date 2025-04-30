@@ -7,6 +7,7 @@ import { isLoggedIn } from "../auth";
 import axios from "axios";
 import Toast from "../toast/toast";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../axios";
 
 function NavBar() {
   const [token, setToken] = useState();
@@ -44,18 +45,14 @@ function NavBar() {
           localStorage.setItem("type", response.data.type);
           localStorage.setItem("hubname", response.data.code_name);
           localStorage.setItem("user", response.data.name);
-        })
-        .catch(
-          (e) => (
-            localStorage.removeItem("token"), (window.location.href = "/login")
-          )
-        );
+        });
+      axiosInstance.get("csrf/", { withCredentials: true });
     }
   }, [isLoggedIn, setToken, setIsLogged, token]);
 
   return (
     <nav>
-      <div className="nav_logo">
+      <div className="nav_logo" onClick={() => (window.location.href = "/")}>
         <div className="nav_title">FDC</div>
         <div className="nav_subtitle">courier & cargo</div>
       </div>

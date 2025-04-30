@@ -8,6 +8,7 @@ import getCookie from "../../components/getCookies";
 import Toast from "../../components/toast/toast";
 import { Spinner } from "../../components/spinner/spinner";
 import "./inscan.css";
+import axiosInstance from "../../components/axios";
 
 const Inscan = () => {
   const [prevalues, setPrevalues] = useState([]);
@@ -18,7 +19,9 @@ const Inscan = () => {
 
   const ondelete = (value) => {
     setPrevalues((prevalues) => prevalues.filter((item) => item !== value));
-    setSavefortable((savefortable) => savefortable.filter((item) => item[1] !== value) )
+    setSavefortable((savefortable) =>
+      savefortable.filter((item) => item[1] !== value)
+    );
   };
   const navigate = useNavigate();
   useEffect(() => {
@@ -28,17 +31,17 @@ const Inscan = () => {
   const handleSumit = () => {
     if (prevalues && prevalues.length != 0) {
       setClick(true);
-      axios
+      axiosInstance
         .post(
-          import.meta.env.VITE_API_LINK + "inscan/",
-          { awbno: savefortable },
-          {
-            headers: {
-              Authorization: "Token " + localStorage.getItem("token"),
-              " X-CSRFToken": getCookie(),
-            },
-            withCredentials: true,
-          }
+          "inscan/",
+          { awbno: savefortable }
+          // {
+          //   headers: {
+          //     Authorization: "Token " + localStorage.getItem("token"),
+          //     // " X-CSRFToken": getCookie(),
+          //   },
+          //   withCredentials: true,
+          // }
         )
         .then((r) => {
           if (r.data.status === "success") {
