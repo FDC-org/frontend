@@ -15,7 +15,7 @@ nav {
     gap           : 5px;
     font-weight   : bold;
     color         : #FEF9FF;
-
+    cursor: pointer;
 }
 
 .nav_title {

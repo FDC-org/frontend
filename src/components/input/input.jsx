@@ -1,13 +1,13 @@
 import { IoIosClose } from "react-icons/io";
 import axios from "axios";
 import "./input.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import getCookie from "../getCookies";
 import Modal from "react-modal";
 import Button from "../button/button";
 import { Spinner } from "../spinner/spinner";
-
+import axiosInstance from "../axios";
 
 const InputField = ({
   name,
@@ -27,7 +27,7 @@ const InputField = ({
   const [wt, setWt] = useState("");
   const [popup, setPopup] = useState(false);
   const [click, setclick] = useState(false);
-  const handleEnter = (e) => {
+  const handleEnter = async (e) => {
     if (e.key === "Enter" || e.key === "Tab" || e.key === " ") {
       if (awbno !== "") {
         if (awbno.length == 9) {
@@ -39,11 +39,18 @@ const InputField = ({
                 {
                   headers: {
                     Authorization: "Token " + localStorage.getItem("token"),
-                    " X-CSRFToken": getCookie(),
+                    " X-CSRFToken": localStorage.getItem("csrf_token"),
                   },
                   withCredentials: true,
                 }
               )
+              // await axiosInstance.get("csrf/");
+              // axiosInstance
+              //   .post(
+              //     "bookingdetails/",
+              //     { awbno: awbno },
+              //     { withCredential: true }
+              //   )
               .then((response) => {
                 if (response.data.status === "found") {
                   onclick((val) => [...prevalues, awbno]);
@@ -80,14 +87,14 @@ const InputField = ({
   const handleSubmit = () => {
     if (pcs !== "" || wt !== "") {
       setclick(true);
-      axios
+      axiosInstance
         .post(
           import.meta.env.VITE_API_LINK + "addbookingdetails/",
           { awbno: awbno, pcs: pcs, wt: wt, doctype: doc_type },
           {
             headers: {
               Authorization: "Token " + localStorage.getItem("token"),
-              " X-CSRFToken": getCookie(),
+              // " X-CSRFToken": getCookie(),
             },
             withCredentials: true,
           }
@@ -98,7 +105,7 @@ const InputField = ({
             setSavefortable((val) => [
               ...savefortable,
               [
-                format(new Date(),'dd-MM-yyyy, HH:mm:ss'),
+                format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
                 awbno,
                 doc_type,
                 pcs,
@@ -110,10 +117,10 @@ const InputField = ({
             setPcs("");
             setWt("");
             setDoc_type("");
-            setclick(false)
+            setclick(false);
           }
         });
-        setclick(false)
+      setclick(false);
     }
   };
   return (

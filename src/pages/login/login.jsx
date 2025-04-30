@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Spinner } from "../../components/spinner/spinner";
 import Toast from "../../components/toast/toast";
 import getCookie from "../../components/getCookies";
+import axiosInstance from "../../components/axios";
 
 const Login = () => {
   const [showpassword, setShowpassword] = useState(false);
@@ -27,29 +28,30 @@ const Login = () => {
 
     if (username !== "" && password !== "") {
       setLoginclick(true);
-      axios
+      await axios
         .post(import.meta.env.VITE_API_LINK + "login/", {
           username: username,
           password: password,
         })
         .then(async (response) => {
           localStorage.setItem("token", response.data.token);
+          // localStorage.setItem("csrf_token", response.data.csrf_token);
           setToast(true);
           seterror("success");
-          await axios
-            .get(import.meta.env.VITE_API_LINK + "csrf/", {
+          await axiosInstance
+            .get("csrf/", {
               withCredentials: true,
               headers: {
+                "Content-Type": "application/json",
                 Authorization: "Token " + localStorage.getItem("token"),
               },
             })
             .then((r) => console.log(r.data))
             .catch((e) => console.log(e));
-          console.log(localStorage.getItem("token"));
-          console.log(getCookie());
           setTimeout(() => {
-            window.location.reload();
-            navigate("/");
+            console.log(localStorage.getItem("token"));
+            window.location.href = "/";
+            // navigate("/");
           }, 1000);
         })
         .catch((e) => {
