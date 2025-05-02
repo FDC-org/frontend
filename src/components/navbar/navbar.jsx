@@ -8,6 +8,7 @@ import axios from "axios";
 import Toast from "../toast/toast";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../axios";
+import { Spinner } from "../spinner/spinner";
 
 function NavBar() {
   const [token, setToken] = useState();
@@ -15,6 +16,7 @@ function NavBar() {
   const [hubname, setHubname] = useState("");
   const [NAME, setNAME] = useState("");
   const [type, setType] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("token") === "undefined") {
@@ -24,29 +26,43 @@ function NavBar() {
     if (isLoggedIn()) {
       setIsLogged(true);
       setToken(localStorage.getItem("token"));
-      axios
-        .get(import.meta.env.VITE_API_LINK + "userdetails/", {
-          headers: { Authorization: "Token " + localStorage.getItem("token") },
-        })
-        .then((response) => {
-          if (response.data.error === "invalid token") {
-            localStorage.removeItem("token");
-            window.location.reload();
-          }
-          if (response.data.new_token !== "none") {
-            console.log(response.data.new_token);
-            localStorage.removeItem("token");
-            localStorage.setItem("token", response.data.new_token);
-            window.location.reload();
-          }
-          setHubname(response.data.code_name);
-          setType(response.data.type);
-          setNAME(response.data.name);
-          localStorage.setItem("type", response.data.type);
-          localStorage.setItem("hubname", response.data.code_name);
-          localStorage.setItem("user", response.data.name);
-        });
-      axiosInstance.get("csrf/", { withCredentials: true });
+      if (
+        !!localStorage.getItem("type") &&
+        !!localStorage.getItem("hubname") &&
+        !!localStorage.getItem("user")
+      ) {
+        setHubname(localStorage.getItem("hubname"));
+        setType(localStorage.getItem("type"));
+        setNAME(localStorage.getItem("user"));
+      } else {
+        setLoading(true);
+        axios
+          .get(import.meta.env.VITE_API_LINK + "userdetails/", {
+            headers: {
+              Authorization: "Token " + localStorage.getItem("token"),
+            },
+          })
+          .then((response) => {
+            if (response.data.error === "invalid token") {
+              localStorage.removeItem("token");
+              window.location.reload();
+            }
+            if (response.data.new_token !== "none") {
+              console.log(response.data.new_token);
+              localStorage.removeItem("token");
+              localStorage.setItem("token", response.data.new_token);
+              window.location.reload();
+            }
+            setHubname(response.data.code_name);
+            setType(response.data.type);
+            setNAME(response.data.name);
+            localStorage.setItem("type", response.data.type);
+            localStorage.setItem("hubname", response.data.code_name);
+            localStorage.setItem("user", response.data.name);
+            setLoading(false);
+          });
+        axiosInstance.get("csrf/", { withCredentials: true });
+      }
     }
   }, [isLoggedIn, setToken, setIsLogged, token]);
 
@@ -56,11 +72,14 @@ function NavBar() {
         <div className="nav_title">FDC</div>
         <div className="nav_subtitle">courier & cargo</div>
       </div>
-      {isLogged && (
-        <div className="nav_name">
-          {type} :<div className="nav_hubname">{hubname}</div>
-        </div>
-      )}
+      {isLogged &&
+        (loading ? (
+          <Spinner />
+        ) : (
+          <div className="nav_name">
+            {type} :<div className="nav_hubname">{hubname}</div>
+          </div>
+        ))}
       <div className="nav_right">
         <div className="nav_track">
           <input type="search" />

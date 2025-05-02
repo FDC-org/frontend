@@ -27,23 +27,43 @@ const QuickMenuBar = () => {
             </div>
             <div
               className="quickmenu_dropdown-item"
-              onClick={() => (window.location.href = "/inscan/viewinscan")}
+              onClick={() => (window.location.href = "/inscan/view")}
             >
               View Inscan
             </div>
-            <div className="quickmenu_dropdown-item">Inscan vs Outscan</div>
           </div>
         </div>
         <div className="quickmenu_dropdown">
           <div className="quickmenu_items">Outscan</div>
           <div className="quickmenu_dropdown-content">
-            <div className="quickmenu_dropdown-item">OutScan</div>
-            <div className="quickmenu_dropdown-item">View Outscan</div>
+            <div
+              className="quickmenu_dropdown-item"
+              onClick={() => (window.location.href = "/outscan")}
+            >
+              OutScan
+            </div>
+            <div
+              className="quickmenu_dropdown-item"
+              onClick={() => (window.location.href = "/outscan/view")}
+            >
+              View Outscan
+            </div>
           </div>
         </div>
-        <div className="quickmenu_items">Manifest</div>
+        <div
+          className="quickmenu_items"
+          onClick={() => (window.location.href = "/manifest")}
+        >
+          Manifest
+        </div>
         <div className="quickmenu_items">DRS</div>
         <div className="quickmenu_items">Delivery</div>
+        <div className="quickmenu_dropdown">
+          <div className="quickmenu_items">Reports</div>
+          <div className="quickmenu_dropdown-content">
+            <div className="quickmenu_dropdown-item">Inscan vs Outscan</div>
+          </div>
+        </div>
       </div>
       <div className="quickmenu_right">
         <div className="quickmenu_date">

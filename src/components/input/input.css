@@ -57,31 +57,44 @@
 }
 
 .inscan_modal {
-    position     : fixed;
-    top          : 50%;
-    left         : 50%;
-    transform    : translate(-50%, -50%);
-    color        : black;
-    padding      : 20px 30px;
-    border-radius: 10px;
-    z-index      : 1000;
-    box-shadow   : 0px 4px 4px 0px black;
-    font-size    : 12px;
-    background-color: #B7C7D9;
+    position        : fixed;
+    top             : 20%;
+    left            : 50%;
+    transform       : translate(-50%, -50%);
+    color           : black;
+    padding         : 20px 30px;
+    border-radius   : 4px;
+    z-index         : 1000;
+    box-shadow      : 0px 4px 4px 0px rgb(98, 98, 98);
+    font-size       : 12px;
+    background-color: #F5F7FA;
+    width           : 30vw;
+    align-items     : center;
+    padding         : 30px;
+    margin-top      : 20px;
+    display         : flex;
+    flex-direction  : column;
+    align-items     : start;
+    justify-content : space-between;
 }
 
 .modal {
     width: 100px;
 }
-.inscan_modal input{
+.inscan_modal input {
     font-size: 14px;
-    margin-top: 4px;
-    
+    width : 80%;
+    }
+.inscan_modal label {
+    margin-top: 20px;
 }
-.radio
-{
+
+.radio {
     display: flex;
-    gap: 5px;
+    gap : 5px;
     align-items: center;
     justify-content: center;
+}
+.inscan_modal .but {
+    margin-top: 10px;
 }
