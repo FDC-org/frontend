@@ -9,7 +9,7 @@ import Button from "../button/button";
 import { Spinner } from "../spinner/spinner";
 import axiosInstance from "../axios";
 
-const InputField = ({
+const OutScanInputField = ({
   name,
   required,
   type,
@@ -18,6 +18,8 @@ const InputField = ({
   prevalues,
   savefortable,
   setSavefortable,
+  to_hub,
+  manifestnumber,
 }) => {
   const [awbno, setAwbno] = useState("");
   const [error, setError] = useState("");
@@ -26,55 +28,71 @@ const InputField = ({
   const [wt, setWt] = useState("");
   const [popup, setPopup] = useState(false);
   const [click, setclick] = useState(false);
+  const [manifest_number, setmanifestnumber] = useState("");
+  const [tohub, settohub] = useState("");
+
+  useEffect(() => {
+    setmanifestnumber(manifestnumber);
+    settohub(to_hub);
+  }, [setmanifestnumber, settohub, to_hub, manifestnumber]);
+
   const handleEnter = async (e) => {
-    if (e.key === "Enter" || e.key === "Tab" || e.key === " ") {
-      if (awbno !== "") {
-        if (awbno.length == 9) {
-          if (!prevalues.includes(awbno)) {
-            axios
-              .post(
-                import.meta.env.VITE_API_LINK + "bookingdetails/",
-                { awbno: awbno },
-                {
-                  headers: {
-                    Authorization: "Token " + localStorage.getItem("token"),
-                    " X-CSRFToken": localStorage.getItem("csrf_token"),
-                  },
-                  withCredentials: true,
-                }
-              )
-              .then((response) => {
-                if (response.data.status === "found") {
-                  onclick((val) => [...prevalues, awbno]);
-                  setSavefortable((val) => [
-                    ...savefortable,
-                    [
-                      format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
-                      awbno,
-                      response.data.type,
-                      response.data.pcs,
-                      response.data.wt,
-                    ],
-                  ]);
-                  setAwbno("");
-                }
-                if (response.data.status === "not found") {
-                  setPopup(true);
-                }
-              })
-              .catch((e) => console.log(e));
+    if (to_hub !== "")
+    {
+      setError("")
+      if (e.key === "Enter" || e.key === "Tab" || e.key === " ") {
+        if (awbno !== "") {
+          if (awbno.length == 9) {
+            if (!prevalues.includes(awbno)) {
+              axios
+                .post(
+                  import.meta.env.VITE_API_LINK + "bookingdetails/",
+                  { awbno: awbno },
+                  {
+                    headers: {
+                      Authorization: "Token " + localStorage.getItem("token"),
+                      " X-CSRFToken": localStorage.getItem("csrf_token"),
+                    },
+                    withCredentials: true,
+                  }
+                )
+                .then((response) => {
+                  if (response.data.status === "found") {
+                    onclick((val) => [...prevalues, awbno]);
+                    setSavefortable((val) => [
+                      ...savefortable,
+                      [
+                        format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
+                        manifest_number,
+                        awbno,
+                        tohub,
+                        response.data.type,
+                        response.data.pcs,
+                        response.data.wt,
+                      ],
+                    ]);
+                    setAwbno("");
+                  }
+                  if (response.data.status === "not found") {
+                    setPopup(true);
+                  }
+                })
+                .catch((e) => console.log(e));
+            } else {
+              setAwbno("");
+            }
           } else {
-            setAwbno("");
+            setError("AWB no must be 9 digits");
           }
         } else {
-          setError("AWB no must be 9 digits");
-          // setAwbno("");
+          setError("enter AWB No.");
+          setAwbno("");
         }
-      } else {
-        setError("enter AWB No.");
-        setAwbno("");
+      }}
+      else
+      {
+        setError("Enter TO HUB or Vehicle Number")
       }
-    }
   };
   const handleSubmit = () => {
     if (pcs !== "" || wt !== "") {
@@ -98,7 +116,9 @@ const InputField = ({
               ...savefortable,
               [
                 format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
+                manifest_number,
                 awbno,
+                tohub,
                 doc_type,
                 pcs,
                 wt,
@@ -200,4 +220,4 @@ const InputField = ({
   );
 };
 
-export default InputField;
+export default OutScanInputField;
