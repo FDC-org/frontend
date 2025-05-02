@@ -32,17 +32,7 @@ const Inscan = () => {
     if (prevalues && prevalues.length != 0) {
       setClick(true);
       axiosInstance
-        .post(
-          "inscan/",
-          { awbno: savefortable }
-          // {
-          //   headers: {
-          //     Authorization: "Token " + localStorage.getItem("token"),
-          //     // " X-CSRFToken": getCookie(),
-          //   },
-          //   withCredentials: true,
-          // }
-        )
+        .post("inscan/", { awbno: savefortable })
         .then((r) => {
           if (r.data.status === "success") {
             setStatus(r.data["status"]);

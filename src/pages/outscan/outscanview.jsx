@@ -1,29 +1,33 @@
 import { useEffect, useState } from "react";
-import "./viewinscan.css";
+import "./viewoutscan.css";
 import { format } from "date-fns";
 import axios from "axios";
 import { Spinner } from "../../components/spinner/spinner";
+import axiosInstance from "../../components/axios";
 import { useNavigate } from "react-router-dom";
 import { isLoggedIn } from "../../components/auth";
 
-const ViewInscan = () => {
+const ViewOutscan = () => {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [data, setData] = useState({});
   const [datarender, setdatarednder] = useState(false);
-  const navigate = useNavigate();
+  const nav = useNavigate()
+
   useEffect(() => {
-    if (!isLoggedIn()) navigate("/login");
+        if (!isLoggedIn()) nav("/login");
     setdatarednder(true);
-    axios
-      .get(import.meta.env.VITE_API_LINK + "inscan/" + date, {
+    axiosInstance
+      .get("outscan/" + date, {
         headers: { Authorization: "Token " + localStorage.getItem("token") },
       })
       .then((r) => {
         if (r.data.status === "success")
+            console.log(r.data.data);
+            
           if (r.data.data != 0) {
             setData(r.data.data);
           }
-        setdatarednder(false);
+            setdatarednder(false);
       })
       .catch((e) => {
         console.log(e);
@@ -35,7 +39,7 @@ const ViewInscan = () => {
     setDate(e.target.value);
     setdatarednder(true);
     axios
-      .get(import.meta.env.VITE_API_LINK + "inscan/" + e.target.value, {
+      .get(import.meta.env.VITE_API_LINK + "outscan/" + e.target.value, {
         headers: { Authorization: "Token " + localStorage.getItem("token") },
       })
       .then((r) => {
@@ -77,10 +81,9 @@ const ViewInscan = () => {
               <tr>
                 <th>S. No.</th>
                 <th>Date</th>
-                <th>AWB No</th>
-                <th>Type</th>
-                <th>Pcs</th>
-                <th>Wt</th>
+                <th>Manifest Number</th>
+                <th>To HUB</th>
+                <th>Vehicle Number</th>
               </tr>
             </thead>
             <tbody>
@@ -90,10 +93,10 @@ const ViewInscan = () => {
                     <tr key={index}>
                       <td>{index + 1}</td>
                       <td>{formatdate(value[1].date)}</td>
-                      <td>{value[1].awbno}</td>
-                      <td>{value[1].type}</td>
-                      <td>{value[1].pcs}</td>
-                      <td>{value[1].wt}</td>
+                      <td onClick={ () => nav('/manifest/'+value[1].manifestnumber)} className="link">{value[1].manifestnumber}</td>
+                      <td>{value[1].tohub}</td>
+                      <td>{value[1].vehicle_number.toUpperCase()}</td>
+                      
                     </tr>
                   );
                 })
@@ -108,4 +111,4 @@ const ViewInscan = () => {
   );
 };
 
-export default ViewInscan;
+export default ViewOutscan;
