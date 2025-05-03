@@ -30,6 +30,7 @@ const OutScanInputField = ({
   const [click, setclick] = useState(false);
   const [manifest_number, setmanifestnumber] = useState("");
   const [tohub, settohub] = useState("");
+  const [loading, setloading] = useState(false);
 
   useEffect(() => {
     setmanifestnumber(manifestnumber);
@@ -37,13 +38,13 @@ const OutScanInputField = ({
   }, [setmanifestnumber, settohub, to_hub, manifestnumber]);
 
   const handleEnter = async (e) => {
-    if (to_hub !== "")
-    {
-      setError("")
+    if (to_hub !== "") {
+      setError("");
       if (e.key === "Enter" || e.key === "Tab" || e.key === " ") {
         if (awbno !== "") {
           if (awbno.length == 9) {
             if (!prevalues.includes(awbno)) {
+              setloading(true);
               axios
                 .post(
                   import.meta.env.VITE_API_LINK + "bookingdetails/",
@@ -76,8 +77,9 @@ const OutScanInputField = ({
                   if (response.data.status === "not found") {
                     setPopup(true);
                   }
+                  setloading(false);
                 })
-                .catch((e) => console.log(e));
+                .catch((e) => setloading(false));
             } else {
               setAwbno("");
             }
@@ -88,11 +90,10 @@ const OutScanInputField = ({
           setError("enter AWB No.");
           setAwbno("");
         }
-      }}
-      else
-      {
-        setError("Enter TO HUB or Vehicle Number")
       }
+    } else {
+      setError("Enter TO HUB or Vehicle Number");
+    }
   };
   const handleSubmit = () => {
     if (pcs !== "" || wt !== "") {
@@ -170,6 +171,7 @@ const OutScanInputField = ({
           inputMode="numeric"
           pattern="[0-9]*"
         />
+        {loading && <Spinner />}
       </div>
       <Modal
         isOpen={popup}

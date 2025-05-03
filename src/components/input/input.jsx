@@ -3,7 +3,7 @@ import axios from "axios";
 import "./input.css";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import getCookie from "../getCookies";
+
 import Modal from "react-modal";
 import Button from "../button/button";
 import { Spinner } from "../spinner/spinner";
@@ -26,11 +26,13 @@ const InputField = ({
   const [wt, setWt] = useState("");
   const [popup, setPopup] = useState(false);
   const [click, setclick] = useState(false);
+  const [loading, setloading] = useState(false);
   const handleEnter = async (e) => {
     if (e.key === "Enter" || e.key === "Tab" || e.key === " ") {
       if (awbno !== "") {
         if (awbno.length == 9) {
           if (!prevalues.includes(awbno)) {
+            setloading(true);
             axios
               .post(
                 import.meta.env.VITE_API_LINK + "bookingdetails/",
@@ -61,8 +63,13 @@ const InputField = ({
                 if (response.data.status === "not found") {
                   setPopup(true);
                 }
+                setloading(false);
               })
-              .catch((e) => console.log(e));
+              .catch((e) => {
+                localStorage.removeItem("token");
+                nav("/login");
+                setloading(false);
+              });
           } else {
             setAwbno("");
           }
@@ -150,6 +157,7 @@ const InputField = ({
           inputMode="numeric"
           pattern="[0-9]*"
         />
+        {loading && <Spinner />}
       </div>
       <Modal
         isOpen={popup}
