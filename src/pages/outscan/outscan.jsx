@@ -201,8 +201,7 @@ const OutScan = () => {
               <Select
                 options={tohubdata}
                 className="outscan_input select"
-                onChange={(e) => 
-                  setTohub(e.value)}
+                onChange={(e) => setTohub(e.value)}
                 placeholder={"Select HUB"}
               />
             </div>
@@ -246,7 +245,12 @@ const OutScan = () => {
                 <td>{index + 1}</td>
                 <td>{value[0]}</td>
                 <td>{value[1]}</td>
-                <td>{value[2]}</td>
+                <td
+                  onClick={() => navigate("/track/" + value[2])}
+                  className="onclick"
+                >
+                  {value[2]}
+                </td>
                 <td>{value[3]}</td>
                 <td>{value[4]}</td>
                 <td>{value[5]}</td>
