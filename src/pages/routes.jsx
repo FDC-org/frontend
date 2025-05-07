@@ -7,6 +7,7 @@ import OutScan from "./outscan/outscan";
 import ViewOutscan from "./outscan/outscanview";
 import ManifestByNumber from "./manifest/manifestbynumber";
 import Manifest from "./manifest/manifest";
+import Track from "./track/track";
 
 const PageRoutes = () => {
   return (
@@ -24,6 +25,7 @@ const PageRoutes = () => {
           path="/manifest/:manifestnumber"
           element={<ManifestByNumber />}
         />
+        <Route path="/track/:awbno" element={<Track />} />
       </Routes>
     </Router>
   );
