@@ -7,7 +7,6 @@ import { isLoggedIn } from "../../components/auth";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../../components/spinner/spinner";
 import Toast from "../../components/toast/toast";
-import getCookie from "../../components/getCookies";
 import axiosInstance from "../../components/axios";
 
 const Login = () => {

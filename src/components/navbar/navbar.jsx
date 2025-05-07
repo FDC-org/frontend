@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { isLoggedIn } from "../auth";
 import axios from "axios";
 import Toast from "../toast/toast";
-import { useNavigate } from "react-router-dom";
 import axiosInstance from "../axios";
 import { Spinner } from "../spinner/spinner";
 
@@ -17,7 +16,7 @@ function NavBar() {
   const [NAME, setNAME] = useState("");
   const [type, setType] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [track_awbno, setTrackAwbno] = useState("");
   useEffect(() => {
     if (localStorage.getItem("token") === "undefined") {
       localStorage.removeItem("token");
@@ -34,6 +33,15 @@ function NavBar() {
         setHubname(localStorage.getItem("hubname"));
         setType(localStorage.getItem("type"));
         setNAME(localStorage.getItem("user"));
+        axiosInstance
+          .get("verify_token/")
+          .then((r) => {
+            if (r.data.status === "new_token") {
+              localStorage.removeItem("token");
+              localStorage.setItem("token", r.data.new_token);
+            }
+          })
+          .catch((e) => console.log(e));
       } else {
         setLoading(true);
         axios
@@ -48,7 +56,6 @@ function NavBar() {
               window.location.reload();
             }
             if (response.data.new_token !== "none") {
-              console.log(response.data.new_token);
               localStorage.removeItem("token");
               localStorage.setItem("token", response.data.new_token);
               window.location.reload();
@@ -77,13 +84,22 @@ function NavBar() {
           <Spinner />
         ) : (
           <div className="nav_name">
-            {type} :<div className="nav_hubname">{hubname}</div>
+            {type.toUpperCase()} :
+            <div className="nav_hubname">{hubname.toUpperCase()}</div>
           </div>
         ))}
       <div className="nav_right">
         <div className="nav_track">
-          <input type="search" />
-          <div className="nav_button">Track</div>
+          <input
+            type="search"
+            onChange={(e) => setTrackAwbno(e.target.value)}
+          />
+          <div
+            className="nav_button"
+            onClick={() => (window.location.href = "/track/" + track_awbno)}
+          >
+            Track
+          </div>
         </div>
         {isLogged && (
           <div className="nav_login">
@@ -98,6 +114,9 @@ function NavBar() {
               className="nav_logouticon"
               onClick={() => {
                 localStorage.removeItem("token");
+                localStorage.removeItem("type");
+                localStorage.removeItem("hubname");
+                localStorage.removeItem("user");
                 <Toast />;
                 window.location.reload();
               }}

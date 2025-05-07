@@ -83,3 +83,7 @@ table tbody td:last-child
 {
     border-right: 0;
 }
+.onclick {
+    cursor         : pointer;
+    text-decoration: underline;
+}
