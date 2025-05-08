@@ -133,7 +133,6 @@ const OutScanInputField = ({
             setclick(false);
           }
         });
-      setclick(false);
     }
   };
   return (
