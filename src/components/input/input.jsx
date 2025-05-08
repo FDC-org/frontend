@@ -119,7 +119,6 @@ const InputField = ({
             setclick(false);
           }
         });
-      setclick(false);
     }
   };
   return (
