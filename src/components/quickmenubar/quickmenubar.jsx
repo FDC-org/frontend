@@ -15,6 +15,12 @@ const QuickMenuBar = () => {
   return (
     <div className="quickmenu_con">
       <div className="quickmenu_left">
+        <div
+          className="quickmenu_items"
+          onClick={() => (window.location.href = "/")}
+        >
+          Dashboard
+        </div>
         <div className="quickmenu_items">Booking</div>
         <div className="quickmenu_dropdown">
           <div className="quickmenu_items">Inscan</div>
