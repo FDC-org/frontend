@@ -91,7 +91,7 @@ const ViewInscan = () => {
                       <td>{index + 1}</td>
                       <td>{formatdate(value[1].date)}</td>
                       <td
-                        onClick={() => navigate("/track/" + value[1])}
+                        onClick={() => navigate("/track/" + value[1].awbno)}
                         className="onclick"
                       >
                         {value[1].awbno}
