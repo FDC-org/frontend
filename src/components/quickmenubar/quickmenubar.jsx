@@ -62,14 +62,19 @@ const QuickMenuBar = () => {
         >
           Manifest
         </div>
-        <div className="quickmenu_items">DRS</div>
+        <div
+          className="quickmenu_items"
+          onClick={() => (window.location.href = "/drs")}
+        >
+          DRS
+        </div>
         <div className="quickmenu_items">Delivery</div>
-        <div className="quickmenu_dropdown">
+        {/* <div className="quickmenu_dropdown">
           <div className="quickmenu_items">Reports</div>
           <div className="quickmenu_dropdown-content">
             <div className="quickmenu_dropdown-item">Inscan vs Outscan</div>
           </div>
-        </div>
+        </div> */}
       </div>
       <div className="quickmenu_right">
         <div className="quickmenu_date">
