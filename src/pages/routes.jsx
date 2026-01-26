@@ -8,6 +8,10 @@ import ViewOutscan from "./outscan/outscanview";
 import ManifestByNumber from "./manifest/manifestbynumber";
 import Manifest from "./manifest/manifest";
 import Track from "./track/track";
+import HubOnboard from "./admin/HubOnbaord.jsx";
+import UserOnboard from "./admin/useronboard.jsx";
+import CreateDRS from "./drs/drs.jsx";
+import DeliveryUpdate from "./delivery/delivery.jsx";
 
 const PageRoutes = () => {
   return (
@@ -21,11 +25,16 @@ const PageRoutes = () => {
         <Route path="/outscan" element={<OutScan />} />
         <Route path="/outscan/view" element={<ViewOutscan />} />
         <Route path="/manifest" element={<Manifest />} />
+        <Route path="/drs" element={<CreateDRS />} />
         <Route
           path="/manifest/:manifestnumber"
           element={<ManifestByNumber />}
         />
         <Route path="/track/:awbno" element={<Track />} />
+        <Route path="/delivery/:drsno" element={<DeliveryUpdate />} />
+
+        <Route path="admin/hubonboard" element={<HubOnboard />} />
+        <Route path="admin/useronboard" element={<UserOnboard />} />
       </Routes>
     </Router>
   );
