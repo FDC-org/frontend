@@ -23,14 +23,21 @@ export const Dashboard = () => {
         animationlink={
           "https://lottie.host/83a6e64d-afc6-45f0-bed1-e86a66d4f733/zI3x1Joh3c.lottie"
         }
-        onclick={() =>navigate('/inscan')}
+        onclick={() => navigate("/inscan")}
       />
       <Cards
         name={"OutScan"}
         animationlink={
           "https://lottie.host/83a6e64d-afc6-45f0-bed1-e86a66d4f733/zI3x1Joh3c.lottie"
         }
-        onclick={() => navigate('/outscan')}
+        onclick={() => navigate("/outscan")}
+      />
+      <Cards
+        name={"DRS"}
+        animationlink={
+          "https://lottie.host/7f0046ab-b091-4c4a-b0da-6c6874b6b472/IIaoqOyqQZ.lottie"
+        }
+        onclick={() => navigate("/drs")}
       />
     </div>
   );
