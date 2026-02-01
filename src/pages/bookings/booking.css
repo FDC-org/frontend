@@ -1,0 +1,167 @@
+
+
+.booking-page {
+    width        : 95%;
+    max-width    : 1250px;
+    margin       : 25px auto;
+    background   : #ffffff;
+    padding      : 25px 30px;
+    border-radius: 6px;
+}
+
+/* Header */
+.booking-header {
+    display        : flex;
+    justify-content: space-between;
+    align-items    : center;
+    margin-bottom  : 15px;
+}
+
+.booking-header h2 {
+    font-size  : 20px;
+    font-weight: 600;
+}
+
+/* Section titles */
+.section-title {
+    margin-top   : 25px;
+    margin-bottom: 12px;
+    font-weight  : 600;
+    font-size    : 16px;
+}
+
+/* Grid layout */
+.grid-3 {
+    display              : grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap                  : 18px;
+    margin-bottom        : 10px;
+}
+
+.grid-4 {
+    display              : grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap                  : 18px;
+    margin-bottom        : 10px;
+}
+
+/* Labels */
+.form-group {
+    display       : flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size    : 13px;
+    margin-bottom: 5px;
+}
+
+/* Inputs */
+.booking-page input,
+.booking-page select {
+    height       : 24px;
+    padding      : 6px 10px;
+    border       : 1px solid #cfd4dc;
+    border-radius: 4px;
+    font-size    : 13px;
+    background   : #fff;
+}
+.booking-page select
+{
+    height : 34px;
+}
+.booking-page input:focus,
+.booking-page select:focus {
+    outline     : none;
+    border-color: #2f80ed;
+}
+
+/* Confirm Button aligned right */
+.confirm-section {
+    display        : flex;
+    justify-content: flex-end;
+    margin-top     : 20px;
+}
+
+.confirm-btn {
+    padding      : 8px 20px;
+    background   : #2f80ed;
+    color        : white;
+    border       : none;
+    border-radius: 4px;
+    font-size    : 13px;
+    cursor       : pointer;
+}
+
+.confirm-btn:hover {
+    background: #1e66d0;
+}
+
+/* Recent table */
+.booking-table {
+    width          : 100%;
+    margin-top     : 20px;
+    border-collapse: collapse;
+}
+
+.booking-table th {
+    background : #eef0f3;
+    font-weight: 600;
+    font-size  : 13px;
+    padding    : 10px;
+    text-align : left;
+}
+
+.booking-table td {
+    padding      : 10px;
+    font-size    : 13px;
+    border-bottom: 1px solid #e6e6e6;
+}
+.button {
+    padding      : 10px 20px;
+    text-align   : center;
+    border-radius: 10px;
+    border       : 1px solid #134d0a;
+    transition   : ease 500ms;
+    background   : none;
+}
+
+.button:hover {
+    background-color: #134d0a;
+    color           : white;
+}
+.error {
+    color     : red;
+    font-size : 12px;
+    margin-top: 4px;
+    background-color: transparent;
+}
+/* Full width table container */
+.recent-fullwidth {
+    width     : 100%;
+    padding   : 0 20px;
+    margin-top: 40px;
+}
+
+/* Table wrapper for horizontal scroll */
+.table-wrapper {
+    width     : 100%;
+    overflow-x: auto;
+}
+
+/* Make table full width */
+.recent-table {
+    width          : 100%;
+    min-width      : 1000px;
+    /* keeps columns aligned */
+    border-collapse: collapse;
+    background     : #fff;
+}
+
+.recent-table th,
+.recent-table td {
+    padding      : 12px;
+    text-align   : left;
+    border-bottom: 1px solid #e5e7eb;
+}
+

@@ -12,6 +12,8 @@ import HubOnboard from "./admin/HubOnbaord.jsx";
 import UserOnboard from "./admin/useronboard.jsx";
 import CreateDRS from "./drs/drs.jsx";
 import DeliveryUpdate from "./delivery/delivery.jsx";
+import Booking from "./bookings/booking.jsx";
+import AllBookings from "./bookings/view_bookings.jsx";
 
 const PageRoutes = () => {
   return (
@@ -26,6 +28,8 @@ const PageRoutes = () => {
         <Route path="/outscan/view" element={<ViewOutscan />} />
         <Route path="/manifest" element={<Manifest />} />
         <Route path="/drs" element={<CreateDRS />} />
+        <Route path="/booking" element={<Booking />} />
+        <Route path="/booking/view" element={<AllBookings />} />
         <Route
           path="/manifest/:manifestnumber"
           element={<ManifestByNumber />}

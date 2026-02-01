@@ -22,11 +22,10 @@ const Manifest = () => {
         headers: { Authorization: "Token " + localStorage.getItem("token") },
       })
       .then((r) => {
-        if (r.data.status === "success") console.log(r.data.data);
-
-        if (r.data.data != 0) {
-          setData(r.data.data);
-        }
+        if (r.data.status === "success")
+          if (r.data.data != 0) {
+            setData(r.data.data);
+          }
         setdatarednder(false);
       })
       .catch((e) => {

@@ -100,6 +100,17 @@ const CreateDRS = () => {
       setToast(true);
       return;
     }
+    if (value.length !== 10) {
+      setStatus("Document Number must be exactly 10 digits");
+      setToast(true);
+      return;
+    }
+
+    if (!/^\d{10}$/.test(value)) {
+      setStatus("Document Number must contain only digits");
+      setToast(true);
+      return;
+    }
 
     setDocList((prev) => [...prev, value]);
     setDocInput("");
@@ -161,7 +172,6 @@ const CreateDRS = () => {
 
         const today = format(new Date(), "yyyy-MM-dd");
         fetchDRS(today);
-        
       } else if (res.data.status === "exists") {
         setStatus(`${res.data.awbno}: Delivered or Out For Delivery`);
         setToast(true);
@@ -287,8 +297,15 @@ const CreateDRS = () => {
             type="text"
             placeholder="Enter Document No (or scan barcode)"
             value={docInput}
-            onChange={(e) => setDocInput(e.target.value)}
+            maxLength={10}
+            onChange={(e) => {
+              // Allow ONLY digits
+              const value = e.target.value.replace(/\D/g, "");
+              setDocInput(value);
+            }}
             onKeyDown={handleKeyDown}
+            inputMode="numeric"
+            pattern="[0-9]*"
             style={{
               width: "100%",
               padding: "12px",
@@ -415,7 +432,7 @@ const CreateDRS = () => {
                   <td
                     style={{ textDecoration: "underline", cursor: "pointer" }}
                     onClick={() =>
-                      navigate("/delivery/"+row.drsno, {
+                      navigate("/delivery/" + row.drsno, {
                         state: {
                           date: row.date,
                           drsno: row.drsno,

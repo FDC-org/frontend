@@ -30,7 +30,7 @@ const InputField = ({
   const handleEnter = async (e) => {
     if (e.key === "Enter" || e.key === "Tab" || e.key === " ") {
       if (awbno !== "") {
-        if (awbno.length == 9) {
+        if (awbno.length == 10) {
           if (!prevalues.includes(awbno)) {
             setloading(true);
             axios
@@ -43,7 +43,7 @@ const InputField = ({
                     " X-CSRFToken": localStorage.getItem("csrf_token"),
                   },
                   withCredentials: true,
-                }
+                },
               )
               .then((response) => {
                 if (response.data.status === "found") {

@@ -51,7 +51,7 @@
 }
 
 table thead {
-    background-color: #1f2a37;
+    background-color: #134d0a;
     color           : white;
 }
 
@@ -84,7 +84,7 @@ table tbody td:last-child {
 }
 .outscan_input
 {
-    border: 1px solid #1f2a37;
+    border: 1px solid #134d0a;
     padding: 2px 5px;
     border-radius: 6px;
     width: 15vw;
