@@ -21,7 +21,24 @@ const QuickMenuBar = () => {
         >
           Dashboard
         </div>
-        <div className="quickmenu_items">Booking</div>
+        <div className="quickmenu_dropdown">
+          <div className="quickmenu_items">Booking</div>
+          <div className="quickmenu_dropdown-content">
+            <div
+              className="quickmenu_dropdown-item"
+              onClick={() => (window.location.href = "/booking")}
+            >
+              Booking
+            </div>
+            <div
+              className="quickmenu_dropdown-item"
+              onClick={() => (window.location.href = "/booking/view")}
+            >
+              View Booking
+            </div>
+          </div>
+        </div>
+
         <div className="quickmenu_dropdown">
           <div className="quickmenu_items">Inscan</div>
           <div className="quickmenu_dropdown-content">
@@ -68,7 +85,7 @@ const QuickMenuBar = () => {
         >
           DRS
         </div>
-        <div className="quickmenu_items">Delivery</div>
+        {/* <div className="quickmenu_items">Delivery</div> */}
         {/* <div className="quickmenu_dropdown">
           <div className="quickmenu_items">Reports</div>
           <div className="quickmenu_dropdown-content">
