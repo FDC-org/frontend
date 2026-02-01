@@ -1,7 +1,7 @@
 nav {
     margin         : 0;
     padding        : 0;
-    background     : #1E2A38;
+    background : #134d0a;
     display        : flex;
     align-items    : center;
     justify-content: space-between;
@@ -63,7 +63,7 @@ nav {
 
 .nav_track .nav_button {
     border-radius: 0px 5px 5px 0px;
-    background   : #B7C7D9;
+    background : rgb(163, 163, 163);
     padding      : 5px 20px;
     text-align   : center;
     font-size    : 14px;

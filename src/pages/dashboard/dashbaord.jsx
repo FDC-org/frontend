@@ -17,6 +17,7 @@ export const Dashboard = () => {
         animationlink={
           "https://lottie.host/98f13bce-638f-46ef-9164-b9e9939257c6/Jcew5ot42F.lottie"
         }
+        onclick={() => navigate("/booking")}
       />
       <Cards
         name={"Inscan"}

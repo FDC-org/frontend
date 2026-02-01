@@ -8,6 +8,7 @@ import axios from "axios";
 import Toast from "../toast/toast";
 import axiosInstance from "../axios";
 import { Spinner } from "../spinner/spinner";
+import { el } from "date-fns/locale";
 
 function NavBar() {
   const [token, setToken] = useState();
@@ -39,6 +40,18 @@ function NavBar() {
             if (r.data.status === "new_token") {
               localStorage.removeItem("token");
               localStorage.setItem("token", r.data.new_token);
+            } else if (r.data.status === "invalid") {
+              localStorage.removeItem("token");
+              localStorage.removeItem("type");
+              localStorage.removeItem("hubname");
+              localStorage.removeItem("user");
+              // window.location.href = "/login";
+            } else if (r.data.error === "invalid token") {
+              localStorage.removeItem("token");
+              localStorage.removeItem("type");
+              localStorage.removeItem("hubname");
+              localStorage.removeItem("user");
+              window.location.href = "/login";
             }
           })
           .catch((e) => console.log(e));
@@ -51,9 +64,17 @@ function NavBar() {
             },
           })
           .then((response) => {
-            if (response.data.error === "invalid token") {
+            console.log(response.data);
+            if (
+              response.data.error === "invalid token" ||
+              response.data.error === "token expired" ||
+              response.data.status === "invalid"
+            ) {
               localStorage.removeItem("token");
-              window.location.reload();
+              localStorage.removeItem("type");
+              localStorage.removeItem("hubname");
+              localStorage.removeItem("user");
+              window.location.href = "/login";
             }
             if (response.data.new_token !== "none") {
               localStorage.removeItem("token");
@@ -96,7 +117,18 @@ function NavBar() {
           />
           <div
             className="nav_button"
-            onClick={() => (window.location.href = "/track/" + track_awbno)}
+            onClick={() => {
+              if (track_awbno.trim() === "") {
+                {
+                  Toast({
+                    type: "error",
+                    message: "Enter AWB number to track",
+                  });
+                }
+                return;
+              }
+              window.location.href = "/track/" + track_awbno;
+            }}
           >
             Track
           </div>
