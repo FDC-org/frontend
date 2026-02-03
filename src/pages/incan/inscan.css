@@ -1,89 +1,499 @@
 .inscan {
+    min-height: calc(100vh - 140px);
+    background: #e8ecf0;
+    padding   : 24px;
+    }
+
+    .inscan__container {
+        max-width     : 1400px;
+        margin        : 0 auto;
+        display       : flex;
+        flex-direction: column;
+        gap           : 20px;
+    }
+
+    /* Header Card */
+    .inscan__header-card {
+        background   : #ffffff;
+        border-radius: 8px;
+        box-shadow   : 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding      : 24px 32px;
+    }
+
+    .inscan__header-content {
     display        : flex;
-    height         : 80vh;
-    align-items    : start;
-    justify-content: start;
-    gap            : 2rem;
-    margin         : 2%;
-    flex-direction : column;
-    gap            : 50px;
+    justify-content: space-between;
     align-items    : center;
+    gap : 20px;
+    }
 
+.inscan__header-left {
+    display    : flex;
+    align-items: center;
+    gap        : 16px;
 }
 
-.inscan_form {
-    width          : 100%;
+.inscan__header-icon {
+    font-size: 2.5rem;
+    color    : #6b7280;
+}
+
+.inscan__title {
+    font-size  : 1.75rem;
+    font-weight: 600;
+    color      : #1f2937;
+    margin     : 0 0 4px 0;
+}
+
+.inscan__subtitle {
+    font-size: 0.9375rem;
+    color    : #9ca3af;
+    margin   : 0;
+}
+
+.inscan__counter {
+    display       : flex;
+    flex-direction: column;
+    align-items   : center;
+    background    : #134d0a;
+    padding       : 16px 32px;
+    border-radius : 8px;
+    min-width     : 120px;
+}
+
+.inscan__counter-label {
+    font-size     : 0.75rem;
+    color         : rgba(255, 255, 255, 0.8);
+    letter-spacing: 1px;
+    margin-bottom : 4px;
+}
+
+.inscan__counter-value {
+    font-size  : 2.5rem;
+    font-weight: 700;
+    color      : #ffffff;
+    line-height: 1;
+}
+
+/* Main Grid - Two Column Layout */
+.inscan__main-grid {
+    display              : grid;
+    grid-template-columns: 1fr 1fr;
+    gap                  : 20px;
+    align-items          : start;
+}
+
+/* Input Card - Left Column */
+.inscan__input-card {
+    background   : #ffffff;
+    border-radius: 8px;
+    box-shadow   : 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding      : 32px;
+    height       : fit-content;
+    position     : sticky;
+    top          : 20px;
+    z-index      : 10;
+    overflow     : visible;
+}
+
+.inscan__input-wrapper {
+    margin-bottom: 24px;
+    position     : relative;
+    z-index      : 5;
+}
+
+.inscan__input-wrapper .input_con {
+    padding: 0;
+}
+
+.inscan__input-wrapper .input_field {
+    width    : 100%;
+    max-width: 100%;
+}
+
+.inscan__input-wrapper .label {
+    display: none;
+}
+
+.inscan__label {
+    display      : block;
+    font-size    : 0.9375rem;
+    font-weight  : 600;
+    color        : #374151;
+    margin-bottom: 8px;
+}
+
+.inscan__required {
+    color: #dc2626;
+}
+
+.inscan__button-group {
+    display       : flex;
+    flex-direction: column;
+    gap           : 12px;
+}
+
+.inscan__submit-btn {
+    padding      : 12px 32px;
+    background   : #134d0a;
+    color        : #ffffff;
+    border       : none;
+    border-radius: 6px;
+    font-size    : 0.9375rem;
+    font-weight  : 600;
+    cursor       : pointer;
+    transition   : all 0.2s ease;
     display        : flex;
-    align-items    : flex-end;
+    align-items : center;
     justify-content: center;
-    gap            : 2rem;
+    gap : 10px;
+    }
 
+.inscan__submit-btn:hover:not(:disabled) {
+    background: #0f3d08;
 }
 
-.inscan_con {
-    border-radius: 15px;
-    background   : #F5F7FA;
-    box-shadow   : 0px 4px 4px 0px #B7C7D9;
-    padding      : 20px 30px;
+.inscan__submit-btn:disabled {
+    opacity: 0.6;
+    cursor : not-allowed;
 }
 
-.inscan_table {
-    background-color: #F5F7FA;
-    border-radius   : 4px;
-    display         : flex;
-    flex-direction  : column;
-    align-items     : center;
-    justify-content : center;
-    padding         : 20px 20px;
-    width           : 60%;
-    text-align: center;
-    box-shadow : 0px 4px 4px 0px #B7C7D9;
+.inscan__submit-btn--loading {
+    background: #0f3d08;
 }
 
-.inscan_table1 {
+.inscan__clear-btn {
+    padding      : 12px 24px;
+    background   : transparent;
+    border       : 1.5px solid #dc2626;
+    color        : #dc2626;
+    border-radius: 6px;
+    font-size    : 0.9375rem;
+    font-weight  : 600;
+    cursor       : pointer;
+    transition   : all 0.2s ease;
+}
+
+.inscan__clear-btn:hover {
+    background: #dc2626;
+    color     : #ffffff;
+}
+
+/* Items Card - Right Column */
+.inscan__items-card {
+    background   : #ffffff;
+    border-radius: 8px;
+    box-shadow   : 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding      : 32px;
+    position     : relative;
+    z-index      : 1;
+}
+
+.inscan__items-title {
+    font-size     : 1.375rem;
+    font-weight   : 600;
+    color         : #1f2937;
+    margin        : 0 0 24px 0;
+    padding-bottom: 16px;
+    border-bottom : 2px solid #f3f4f6;
+}
+
+.inscan__items-content {
+    min-height: 200px;
+}
+
+/* Empty State */
+.inscan__empty {
+    display        : flex;
+    flex-direction : column;
+    align-items    : center;
+    justify-content: center;
+    padding        : 60px 20px;
+    gap            : 12px;
+}
+
+.inscan__empty-icon {
+    font-size: 4rem;
+    color    : #d1d5db;
+}
+
+.inscan__empty-text {
+    font-size: 1rem;
+    color    : #9ca3af;
+    margin   : 0;
+}
+
+/* Table */
+.inscan__table-wrapper {
+    overflow-x   : auto;
+    border-radius: 8px;
+    border       : 1px solid #e5e7eb;
+}
+
+.inscan__table {
     width          : 100%;
-    border-collapse: separate;
-    border-spacing : 0;
-    border-radius  : 6px;
-    overflow       : hidden;
+    border-collapse: collapse;
+    font-size      : 0.9375rem;
+    }
+
+    .inscan__table thead {
+        background: #134d0a;
+        color     : #ffffff;
+    }
+
+    .inscan__table th {
+        padding       : 14px 16px;
+        text-align    : left;
+        font-weight   : 600;
+        font-size     : 0.8125rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .inscan__table th:last-child {
     text-align: center;
-    font-size: 14px;
+    width : 100px;
 }
 
-table thead {
-    background-color: #134d0a;
-    color           : white;
+.inscan__table td {
+    padding: 14px 16px;
+    color  : #1f2937;
 }
 
-table thead th {
-    padding     : 15px;
-    text-align  : center;
-    border-right: 2px solid #B7C7D9;
+.inscan__table td:last-child {
+    text-align: center;
 }
 
-table thead th:last-child {
-    border-right: none;
+.inscan__table tbody tr {
+    transition: background 0.15s ease;
 }
 
-table tbody tr:nth-child(even) {
-    background-color: #B7C7D9;
+.inscan__table tbody tr:nth-child(odd) {
+    background: #ffffff;
 }
 
-table tbody tr:nth-child(odd) {
-    background-color: white;
+.inscan__table tbody tr:nth-child(even) {
+    background: #c9d6e8;
 }
 
-table tbody tr td {
-    padding      : 15px;
-    border-right : 1px solid black;
-    padding : 10px 20px;
+.inscan__table tbody tr:hover {
+    background: #b8c9e0;
 }
 
-table tbody td:last-child
-{
-    border-right: 0;
+.inscan__awb {
+    font-weight: 600;
+    color      : #134d0a;
+    letter-spacing: 0.3px;
 }
-.onclick {
+.inscan__delete-btn {
+    display        : inline-flex;
+    align-items    : center;
+    justify-content: center;
+    padding        : 8px;
+    background     : transparent;
+    border         : none;
+    color          : #dc2626;
+    font-size      : 1.25rem;
     cursor         : pointer;
-    text-decoration: underline;
+    border-radius : 6px;
+    transition    : all 0.2s ease;
+    }
+
+    .inscan__delete-btn:hover {
+        background: #fee2e2;
+        transform : scale(1.1);
+    }
+
+    .inscan__delete-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Large Desktop */
+    @media (min-width: 1200px) {
+        .inscan__main-grid {
+            grid-template-columns: 45% 55%;
+        }
+    }
+
+    /* Tablet - Keep side by side */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .inscan {
+            padding: 20px;
+        }
+
+        .inscan__header-card,
+        .inscan__input-card,
+        .inscan__items-card {
+            padding: 24px;
+        }
+
+        .inscan__title {
+            font-size: 1.5rem;
+        }
+
+        .inscan__counter-value {
+            font-size: 2rem;
+        }
+
+        .inscan__table {
+            font-size: 0.875rem;
+        }
+
+        .inscan__table th,
+        .inscan__table td {
+            padding: 12px;
+        }
+    }
+
+    /* Tablet and Below - Stack Layout */
+    @media (max-width: 768px) {
+        .inscan {
+            padding: 20px;
+        }
+
+        .inscan__main-grid {
+            grid-template-columns: 1fr;
+            gap                  : 16px;
+        }
+
+        .inscan__input-card {
+            position: static;
+        }
+
+        .inscan__header-card,
+        .inscan__input-card,
+        .inscan__items-card {
+            padding: 24px;
+        }
+
+        .inscan__title {
+            font-size: 1.5rem;
+        }
+
+        .inscan__counter-value {
+            font-size: 2rem;
+        }
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .inscan {
+            padding: 16px;
+        }
+
+        .inscan__container {
+            gap: 16px;
+        }
+
+        .inscan__header-card,
+        .inscan__input-card,
+        .inscan__items-card {
+            padding: 20px;
+        }
+
+        .inscan__header-content {
+            flex-direction: column;
+            align-items   : flex-start;
+        }
+
+        .inscan__header-left {
+            width: 100%;
+        }
+
+        .inscan__header-icon {
+            font-size: 2rem;
+        }
+
+        .inscan__title {
+            font-size: 1.375rem;
+        }
+
+        .inscan__subtitle {
+            font-size: 0.875rem;
+        }
+
+        .inscan__counter {
+            width  : 100%;
+            padding: 12px 24px;
+        }
+
+        .inscan__counter-value {
+            font-size: 1.875rem;
+        }
+
+        .inscan__button-group {
+            flex-direction: column;
+        }
+
+        .inscan__submit-btn,
+        .inscan__clear-btn {
+            width          : 100%;
+            justify-content: center;
+        }
+
+        .inscan__items-title {
+            font-size: 1.25rem;
+        }
+
+        .inscan__table-wrapper {
+            overflow-x                : auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .inscan__table {
+            min-width: 500px;
+        }
+
+        .inscan__table th,
+        .inscan__table td {
+            padding: 12px;
+        }
+
+        .inscan__empty {
+            padding: 40px 20px;
+        }
+
+        .inscan__empty-icon {
+            font-size: 3rem;
+        }
+    }
+
+    /* Small Mobile */
+    @media (max-width: 480px) {
+        .inscan__counter {
+            min-width: auto;
+        }
+
+        .inscan__counter-label {
+            font-size: 0.6875rem;
+        }
+
+        .inscan__counter-value {
+            font-size: 1.5rem;
+        }
+
+        .inscan__table {
+            min-width: 450px;
+            font-size: 0.875rem;
+        }
+
+        .inscan__table th,
+        .inscan__table td {
+            padding: 10px 8px;
+        }
+    }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+
+        .inscan__submit-btn,
+        .inscan__clear-btn,
+        .inscan__delete-btn,
+        .inscan__table tbody tr {
+            transition: none;
+        }
+
+        .inscan__delete-btn:hover {
+            transform: none;
+        }
 }

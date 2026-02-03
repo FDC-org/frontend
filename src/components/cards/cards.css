@@ -1,29 +1,166 @@
-.cards_con {
-    background-color: white;
-    border-radius   : 7px;
-    box-shadow      : 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-    display         : flex;
-    width           : 180px;
-    height          : 160px;
-    padding         : 10px;
-    flex-direction  : column;
-    justify-content : space-evenly;
-    align-items     : center;
-    gap             : 10px;
-    cursor: pointer;
-
+.card {
+    background    : #ffffff;
+    border-radius : 16px;
+    box-shadow    : 0 2px 8px rgba(0, 0, 0, 0.08);
+    display       : flex;
+    flex-direction: column;
+    padding       : 20px;
+    gap           : 16px;
+    cursor        : pointer;
+    transition    : all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border        : 1px solid rgba(0, 0, 0, 0.06);
+    position      : relative;
+    overflow      : hidden;
 }
 
-.card_anim {
-    height          : 100%;
-    width           : 100%;
-    align-items     : stretch;
-    background-color: #F5F7FA;
-    border-radius: 10px;
-    object-fit      : cover;
+.card::before {
+    content       : '';
+    position      : absolute;
+    top           : 0;
+    left          : 0;
+    right         : 0;
+    bottom        : 0;
+    background    : linear-gradient(135deg, rgba(59, 165, 35, 0.05) 0%, rgba(102, 126, 234, 0.05) 100%);
+    opacity       : 0;
+    transition    : opacity 0.3s ease;
+    pointer-events: none;
 }
 
-.card_title {
-    font-weight: bold;
-    font-size  : 18px;
+.card:hover {
+    transform   : translateY(-4px);
+    box-shadow  : 0 12px 24px rgba(0, 0, 0, 0.15);
+    border-color: rgba(59, 165, 35, 0.2);
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card:active {
+    transform : translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card:focus-visible {
+    outline       : 2px solid #3ba523;
+    outline-offset: 2px;
+}
+
+.card__animation-wrapper {
+    flex           : 1;
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+    background     : linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius  : 12px;
+    padding        : 16px;
+    min-height     : 140px;
+    position       : relative;
+    overflow       : hidden;
+}
+
+.card__animation {
+    width     : 100%;
+    height    : 100%;
+    object-fit: contain;
+    max-height: 120px;
+}
+
+.card__title {
+    font-size     : 1.125rem;
+    font-weight   : 600;
+    color         : #1a202c;
+    margin        : 0;
+    text-align    : center;
+    letter-spacing: -0.01em;
+    line-height   : 1.4;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .card {
+        padding      : 16px;
+        gap          : 12px;
+        border-radius: 12px;
+    }
+
+    .card__animation-wrapper {
+        min-height: 120px;
+        padding   : 12px;
+    }
+
+    .card__animation {
+        max-height: 100px;
+    }
+
+    .card__title {
+        font-size: 1rem;
+    }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1023px) {
+    .card {
+        padding: 18px;
+    }
+
+    .card__animation-wrapper {
+        min-height: 160px;
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .card {
+        padding: 24px;
+        gap    : 20px;
+    }
+
+    .card__animation-wrapper {
+        min-height: 180px;
+        padding   : 20px;
+    }
+
+    .card__animation {
+        max-height: 140px;
+    }
+
+    .card__title {
+        font-size: 1.25rem;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    .card,
+    .card::before,
+    .card__animation {
+        transition: none;
+    }
+
+    .card:hover {
+        transform: none;
+    }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+    .card {
+        background  : #2d3748;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow  : 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .card:hover {
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .card__animation-wrapper {
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    }
+
+    .card__title {
+        color: #f7fafc;
+    }
 }
