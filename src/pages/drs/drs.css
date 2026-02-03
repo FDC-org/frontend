@@ -1,89 +1,675 @@
-.inscan {
+
+.drs-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    padding   : 24px;
+}
+
+.page-loading {
     display        : flex;
-    height         : 80vh;
-    align-items    : start;
-    justify-content: start;
-    gap            : 2rem;
-    margin         : 2%;
-    flex-direction : column;
-    gap            : 50px;
     align-items    : center;
-
-}
-
-.inscan_form {
-    width          : 100%;
-    display        : flex;
-    align-items    : flex-end;
     justify-content: center;
-    gap            : 2rem;
-
+    min-height     : 100vh;
 }
 
-.inscan_con {
-    border-radius: 15px;
-    background   : #F5F7FA;
-    box-shadow   : 0px 4px 4px 0px #B7C7D9;
-    padding      : 20px 30px;
+.drs-container {
+    max-width     : 1400px;
+    margin        : 0 auto;
+    display       : flex;
+    flex-direction: column;
+    gap           : 32px;
 }
 
-.inscan_table {
-    background-color: #F5F7FA;
-    border-radius   : 4px;
-    display         : flex;
-    flex-direction  : column;
-    align-items     : center;
-    justify-content : center;
-    padding         : 20px 20px;
-    width           : 60%;
-    text-align      : center;
-    box-shadow      : 0px 4px 4px 0px #B7C7D9;
+/* ============================================
+   SECTION HEADERS
+   ============================================ */
+
+.section-header {
+    margin-bottom: 24px;
 }
 
-.inscan_table1 {
+.section-title {
+    display      : flex;
+    align-items  : center;
+    gap          : 12px;
+    margin-bottom: 6px;
+}
+
+.section-title h2 {
+    font-size  : 24px;
+    font-weight: 700;
+    color      : #2d3748;
+    margin     : 0;
+}
+
+.section-icon {
+    font-size: 24px;
+    color    : #2e7d32;
+}
+
+.section-subtitle {
+    font-size  : 14px;
+    color      : #718096;
+    margin     : 0;
+    margin-left: 36px;
+}
+
+/* ============================================
+   CREATE DRS SECTION
+   ============================================ */
+
+.drs-create-section {
+    background   : white;
+    border-radius: 16px;
+    padding      : 32px;
+    box-shadow   : 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition   : box-shadow 0.3s ease;
+}
+
+.drs-create-section:hover {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   FORM STYLING
+   ============================================ */
+
+.drs-form {
+    display       : flex;
+    flex-direction: column;
+    gap           : 24px;
+}
+
+.form-row {
+    display              : grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap                  : 20px;
+}
+
+.form-group {
+    display       : flex;
+    flex-direction: column;
+    gap           : 8px;
+}
+
+.form-label {
+    display    : flex;
+    align-items: center;
+    gap        : 8px;
+    font-size  : 14px;
+    font-weight: 600;
+    color      : #4a5568;
+}
+
+.label-icon {
+    font-size: 14px;
+    color    : #2e7d32;
+}
+
+.form-input,
+.form-select {
+    width        : 100%;
+    padding      : 12px 16px;
+    font-size    : 15px;
+    color        : #2d3748;
+    background   : #f7fafc;
+    border       : 2px solid #e2e8f0;
+    border-radius: 10px;
+    transition   : all 0.3s ease;
+    font-family  : inherit;
+    outline      : none;
+}
+
+.form-input:focus,
+.form-select:focus {
+    background  : white;
+    border-color: #2e7d32;
+    box-shadow  : 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.form-input.disabled {
+    background: #edf2f7;
+    color     : #718096;
+    cursor    : not-allowed;
+}
+
+.form-select {
+    cursor             : pointer;
+    appearance         : none;
+    background-image   : url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat  : no-repeat;
+    background-position: right 12px center;
+    padding-right      : 40px;
+}
+
+.form-select option {
+    padding: 10px;
+}
+
+/* Document Input with Button */
+.doc-input-wrapper {
+    display: flex;
+    gap    : 12px;
+}
+
+.doc-input {
+    flex: 1;
+}
+
+.add-doc-btn {
+    display      : flex;
+    align-items  : center;
+    gap          : 8px;
+    padding      : 12px 24px;
+    background   : linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    color        : white;
+    border       : none;
+    border-radius: 10px;
+    font-size    : 15px;
+    font-weight  : 600;
+    cursor       : pointer;
+    transition   : all 0.3s ease;
+    white-space  : nowrap;
+}
+
+.add-doc-btn:hover:not(:disabled) {
+    transform : translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4);
+}
+
+.add-doc-btn:disabled {
+    opacity  : 0.5;
+    cursor   : not-allowed;
+    transform: none;
+}
+
+.input-hint {
+    font-size : 12px;
+    color     : #a0aec0;
+    margin-top: -4px;
+}
+
+/* ============================================
+   DOCUMENT TAGS
+   ============================================ */
+
+.doc-tags-section {
+    background   : #f7fafc;
+    border-radius: 12px;
+    padding      : 20px;
+    border       : 2px dashed #cbd5e0;
+}
+
+.doc-tags-header {
+    margin-bottom: 16px;
+}
+
+.doc-count-badge {
+    display      : inline-flex;
+    align-items  : center;
+    padding      : 6px 14px;
+    background   : linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    color        : white;
+    border-radius: 20px;
+    font-size    : 13px;
+    font-weight  : 600;
+}
+
+.doc-tags-list {
+    display  : flex;
+    flex-wrap: wrap;
+    gap      : 10px;
+}
+
+.doc-tag {
+    display      : flex;
+    align-items  : center;
+    gap          : 10px;
+    background   : white;
+    padding      : 10px 14px;
+    border-radius: 8px;
+    border       : 2px solid #e2e8f0;
+    font-size    : 14px;
+    font-weight  : 600;
+    color        : #2d3748;
+    transition   : all 0.2s ease;
+}
+
+.doc-tag:hover {
+    border-color: #2e7d32;
+    box-shadow  : 0 2px 8px rgba(46, 125, 50, 0.15);
+}
+
+.doc-tag-number {
+    font-family   : 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+
+.doc-tag-remove {
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+    width          : 20px;
+    height         : 20px;
+    background     : #fed7d7;
+    color          : #c53030;
+    border         : none;
+    border-radius  : 50%;
+    cursor         : pointer;
+    transition     : all 0.2s ease;
+    padding        : 0;
+}
+
+.doc-tag-remove:hover {
+    background: #fc8181;
+    color     : white;
+    transform : rotate(90deg);
+}
+
+/* ============================================
+   FORM ACTIONS
+   ============================================ */
+
+.form-actions {
+    display : flex;
+    align-items    : center;
+    justify-content: space-between;
+    padding-top    : 16px;
+    border-top     : 2px solid #e2e8f0;
+    }
+
+    .total-docs {
+        font-size: 15px;
+        color    : #4a5568;
+    }
+
+    .total-docs strong {
+        color    : #2d3748;
+        font-size: 18px;
+    }
+
+    .action-spinner {
+        padding: 10px 40px;
+    }
+
+    .btn-create-drs {
+        display      : flex;
+        align-items  : center;
+        gap          : 10px;
+        padding      : 14px 32px;
+        background   : linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+        color        : white;
+        border       : none;
+        border-radius: 10px;
+        font-size    : 16px;
+        font-weight  : 600;
+        cursor       : pointer;
+        transition   : all 0.3s ease;
+        box-shadow   : 0 4px 6px rgba(46, 125, 50, 0.2);
+    }
+
+    .btn-create-drs:hover:not(:disabled) {
+        transform : translateY(-2px);
+        box-shadow: 0 8px 15px rgba(46, 125, 50, 0.3);
+    }
+
+    .btn-create-drs:disabled {
+        opacity  : 0.5;
+        cursor   : not-allowed;
+        transform: none;
+    }
+
+    /* ============================================
+   TABLE SECTION
+   ============================================ */
+
+    .drs-table-section {
+        background   : white;
+        border-radius: 16px;
+        padding      : 32px;
+        box-shadow   : 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Table Filters */
+    .table-filters {
+        display      : flex;
+        gap          : 16px;
+        margin-bottom: 24px;
+        flex-wrap    : wrap;
+    }
+
+    .search-box {
+        flex       : 1;
+        min-width  : 250px;
+        position   : relative;
+        display    : flex;
+        align-items: center;
+    }
+
+.search-box .search-icon {
+    position : absolute;
+    left     : 14px;
+    color    : #a0aec0;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.search-input {
+    width        : 100%;
+    padding      : 12px 16px 12px 44px;
+    font-size    : 15px;
+    color        : #2d3748;
+    background   : #f7fafc;
+    border       : 2px solid #e2e8f0;
+    border-radius: 10px;
+    transition   : all 0.3s ease;
+    outline      : none;
+}
+
+.search-input:focus {
+    background  : white;
+    border-color: #2e7d32;
+    box-shadow  : 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.search-input::placeholder {
+    color: #cbd5e0;
+}
+
+.date-filter {
+    position   : relative;
+    display    : flex;
+    align-items: center;
+}
+
+.date-filter .date-icon {
+    position      : absolute;
+    left          : 14px;
+    color         : #a0aec0;
+    font-size     : 16px;
+    pointer-events: none;
+}
+
+.date-input {
+    padding      : 12px 16px 12px 44px;
+    font-size    : 15px;
+    color        : #2d3748;
+    background   : #f7fafc;
+    border       : 2px solid #e2e8f0;
+    border-radius: 10px;
+    transition   : all 0.3s ease;
+    outline      : none;
+    cursor       : pointer;
+}
+
+.date-input:focus {
+    background  : white;
+    border-color: #2e7d32;
+    box-shadow  : 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+/* ============================================
+   TABLE
+   ============================================ */
+
+.table-container {
+    overflow-x   : auto;
+    border-radius: 12px;
+    border       : 1px solid #e2e8f0;
+}
+
+.table-loading {
+    display : flex;
+    justify-content: center;
+    padding : 60px 20px;
+    }
+
+.empty-state {
+    display        : flex;
+    flex-direction : column;
+    align-items    : center;
+    justify-content: center;
+    padding        : 60px 20px;
+    color          : #a0aec0;
+}
+
+.empty-icon {
+    font-size    : 48px;
+    margin-bottom: 16px;
+    opacity      : 0.5;
+}
+
+.empty-message {
+    font-size: 16px;
+    margin   : 0;
+}
+
+.drs-table {
     width          : 100%;
-    border-collapse: separate;
-    border-spacing : 0;
-    border-radius  : 6px;
-    overflow       : hidden;
-    text-align     : center;
+    border-collapse: collapse;
     font-size      : 14px;
 }
 
-table thead {
-    background-color: #134d0a;
-    color           : white;
+.drs-table thead {
+    background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    color     : white;
 }
 
-table thead th {
-    padding     : 15px;
-    text-align  : center;
-    border-right: 2px solid #B7C7D9;
+.drs-table thead th {
+    padding       : 16px 20px;
+    text-align    : left;
+    font-weight   : 600;
+    font-size     : 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom : 2px solid rgba(255, 255, 255, 0.1);
 }
 
-table thead th:last-child {
-    border-right: none;
+.drs-table thead th:first-child {
+    border-top-left-radius: 12px;
 }
 
-table tbody tr:nth-child(even) {
-    background-color: #B7C7D9;
+.drs-table thead th:last-child {
+    border-top-right-radius: 12px;
 }
 
-table tbody tr:nth-child(odd) {
-    background-color: white;
+.drs-table tbody tr {
+    background: white;
+    transition: all 0.2s ease;
 }
 
-table tbody tr td {
-    padding     : 15px;
-    border-right: 1px solid black;
-    padding     : 10px 20px;
+.drs-table tbody tr:nth-child(even) {
+    background: #f7fafc;
 }
 
-table tbody td:last-child {
-    border-right: 0;
+.drs-table tbody tr.table-row-clickable {
+    cursor: pointer;
 }
 
-.onclick {
-    cursor         : pointer;
-    text-decoration: underline;
+.drs-table tbody tr.table-row-clickable:hover {
+    background: #edf2f7;
+    transform : scale(1.01);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.drs-table tbody td {
+    padding      : 16px 20px;
+    color        : #4a5568;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.drs-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.th-narrow,
+.td-narrow {
+    width     : 60px;
+    text-align: center;
+}
+
+.td-drs-number {
+    font-weight: 600;
+    color      : #2e7d32;
+    font-family: 'Courier New', monospace;
+}
+
+/* Table Footer */
+.table-footer {
+    padding                   : 16px 20px;
+    border-top                : 1px solid #e2e8f0;
+    background                : #f7fafc;
+    border-bottom-left-radius : 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.table-info {
+    font-size : 13px;
+    color     : #718096;
+    margin    : 0;
+    text-align: center;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .form-row {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 968px) {
+    .drs-page {
+        padding: 16px;
+    }
+
+    .drs-container {
+        gap: 24px;
+    }
+
+    .drs-create-section,
+    .drs-table-section {
+        padding: 24px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .table-filters {
+        flex-direction: column;
+    }
+
+    .search-box {
+        min-width: 100%;
+    }
+
+    .date-filter {
+        width: 100%;
+    }
+
+    .date-input {
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .drs-page {
+        padding: 12px;
+    }
+
+    .drs-create-section,
+    .drs-table-section {
+        padding      : 20px;
+        border-radius: 12px;
+    }
+
+    .section-title h2 {
+        font-size: 20px;
+    }
+
+    .section-icon {
+        font-size: 20px;
+    }
+
+    .section-subtitle {
+        font-size: 13px;
+    }
+
+    .doc-input-wrapper {
+        flex-direction: column;
+    }
+
+    .add-doc-btn {
+        width          : 100%;
+        justify-content: center;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap           : 16px;
+        align-items   : stretch;
+    }
+
+    .btn-create-drs {
+        width          : 100%;
+        justify-content: center;
+    }
+
+    .drs-table {
+        font-size: 13px;
+    }
+
+    .drs-table thead th,
+    .drs-table tbody td {
+        padding: 12px 10px;
+    }
+
+    .th-narrow,
+    .td-narrow {
+        width: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .doc-tags-list {
+        gap: 8px;
+    }
+
+    .doc-tag {
+        font-size: 13px;
+        padding  : 8px 12px;
+    }
+
+    .section-header {
+        margin-bottom: 20px;
+    }
+}
+
+/* Landscape mode for tablets */
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: landscape) {
+    .form-row {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Print styles */
+@media print {
+    .drs-page {
+        background: white;
+        padding   : 0;
+    }
+
+    .drs-create-section {
+        box-shadow: none;
+        border    : 1px solid #e2e8f0;
+    }
+
+    .table-filters,
+    .form-actions,
+    .doc-tag-remove {
+        display: none;
+    }
 }
