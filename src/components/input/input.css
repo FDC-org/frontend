@@ -1,100 +1,338 @@
+/* Base styles - Mobile First */
 .input_con {
     display       : flex;
     flex-direction: column;
-    align-items   : start;
+    align-items : stretch;
     font-size     : 16px;
-    gap           : 5px;
+    gap        : 8px;
+    width      : 100%;
+    max-width  : 100%;
+    padding    : 0 10px;
+    box-sizing : border-box;
+    position   : relative;
+    z-index    : 1;
 }
 
 .label {
     font-size  : 14px;
     font-weight: bold;
+    color : #333;
 }
 
 .input_field {
-    color          : black;
-    border-radius  : 6px;
-    border         : none;
-    outline        : none;
-    background     : white;
-    padding        : none;
-    padding        : 6px 20px;
-    font-size      : 18px;
-    border         : solid 1px black;
-    height         : 20px;
-    display        : flex;
-    flex-direction : row;
-    justify-content: start;
-    gap            : 20px;
-    width          : 50vw;
-    font-weight    : bold;
+    color         : black;
+    border-radius : 6px;
+    background    : white;
+    padding       : 8px 15px;
+    font-size     : 16px;
+    border        : solid 1px black;
+    min-height    : 40px;
+    display       : flex;
+    flex-direction: row;
+    align-items   : center;
+    gap           : 10px;
+    width         : 100%;
+    font-weight   : bold;
+    box-sizing    : border-box;
+    }
+
+    .input_field input {
+        flex       : 1;
+        border     : none;
+        outline    : none;
+        background : transparent;
+        font-size  : 16px;
+        font-weight: bold;
+        width      : 100%;
 }
 
 .previousval {
     display        : flex;
     flex-direction : row;
     flex-wrap      : wrap;
-    justify-content: center;
-    gap            : 3px;
-
+    justify-content: flex-start;
+    gap            : 6px;
+    margin-top     : 4px;
+    position       : relative;
+    z-index        : 10;
 }
 
 .prevalues {
     background-color: #134d0a;
-    padding         : 2px 4px;
+    padding : 6px 8px;
     border-radius   : 4px;
     color           : white;
     font-size       : 12px;
     font-weight     : bold;
     display         : flex;
-    justify-content : center;
+    align-items : center;
+    gap         : 4px;
+    white-space : nowrap;
+    }
 
+.preval_text {
+    display: inline-block;
+}
+
+.preval_close {
+    background     : none;
+    border         : none;
+    padding        : 0;
+    margin         : 0;
+    cursor         : pointer;
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+    color          : white;
+    transition     : opacity 0.2s;
+}
+
+.preval_close:hover {
+    opacity: 0.7;
 }
 
 .input_error {
-    columns  : rgb(255, 0, 0);
-    font-size: 12px;
+    color     : rgb(255, 0, 0);
+    font-size : 12px;
+    margin-top: 4px;
 }
 
-.inscan_modal {
+/* Modal Overlay */
+.inscan_modal_overlay {
     position        : fixed;
-    top             : 20%;
-    left            : 50%;
-    transform       : translate(-50%, -50%);
-    color           : black;
-    padding         : 20px 30px;
-    border-radius   : 4px;
-    z-index         : 1000;
-    box-shadow      : 0px 4px 4px 0px rgb(98, 98, 98);
-    font-size       : 12px;
-    background-color: #F5F7FA;
-    width           : 30vw;
-    align-items     : center;
-    padding         : 30px;
-    margin-top      : 20px;
+    top             : 0;
+    left            : 0;
+    right           : 0;
+    bottom          : 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index         : 999;
     display         : flex;
-    flex-direction  : column;
-    align-items     : start;
-    justify-content : space-between;
-}
-
-.modal {
-    width: 100px;
-}
-.inscan_modal input {
-    font-size: 14px;
-    width : 80%;
+    align-items     : center;
+    justify-content : center;
+    padding         : 20px;
     }
-.inscan_modal label {
-    margin-top: 20px;
+
+    /* Modal Container */
+    .inscan_modal {
+        position: relative;
+    background-color: #F5F7FA;
+    border-radius : 8px;
+    box-shadow    : 0px 4px 20px rgba(0, 0, 0, 0.2);
+    width         : 90%;
+    max-width     : 400px;
+    max-height    : 90vh;
+    overflow-y    : auto;
+    padding       : 20px;
+    box-sizing    : border-box;
+    }
+
+    .modal_title {
+        font-size  : 18px;
+        font-weight: bold;
+        margin     : 0 0 20px 0;
+        color      : #333;
+    }
+
+    .modal_content {
+        display       : flex;
+        flex-direction: column;
+        gap           : 16px;
+    }
+
+    .form_group {
+        display       : flex;
+        flex-direction: column;
+        gap           : 8px;
+    }
+
+    .form_label {
+        font-size  : 14px;
+        font-weight: 600;
+        color      : #333;
+    }
+
+    .radio_group {
+        display  : flex;
+        gap      : 16px;
+        flex-wrap: wrap;
+    }
+
+    .radio_label {
+        display    : flex;
+        align-items: center;
+        gap        : 6px;
+        cursor     : pointer;
+        font-size  : 14px;
+    }
+
+    .radio_label input[type="radio"] {
+        cursor: pointer;
+        width : 16px;
+        height: 16px;
+    }
+
+    .form_input {
+        padding      : 10px 12px;
+        border       : 1px solid #ccc;
+        border-radius: 6px;
+        font-size    : 14px;
+        width        : 100%;
+        box-sizing   : border-box;
+        transition   : border-color 0.2s;
+    }
+
+    .form_input:focus {
+        outline     : none;
+        border-color: #134d0a;
+    }
+
+    .modal_actions {
+        display        : flex;
+        gap            : 10px;
+        margin-top     : 8px;
+        justify-content: flex-end;
+        flex-wrap      : wrap;
+    }
+
+    .modal_actions button {
+        flex     : 1;
+        min-width: 100px;
+    }
+
+    /* Tablet Styles */
+    @media screen and (min-width: 768px) {
+        .input_con {
+            padding: 0;
+        }
+
+        .input_field {
+            width    : 60vw;
+            max-width: 600px;
+            padding  : 10px 20px;
+            font-size: 18px;
+        }
+
+        .input_field input {
+            font-size: 18px;
+        }
+
+        .previousval {
+            gap: 8px;
+        }
+
+        .prevalues {
+            padding  : 8px 10px;
+            font-size: 13px;
+        }
+
+        .inscan_modal {
+            width    : 80%;
+            max-width: 500px;
+            padding  : 30px;
+        }
+
+        .modal_title {
+            font-size: 20px;
+        }
+
+        .form_input {
+            font-size: 15px;
+        }
+
+        .modal_actions {
+            flex-wrap: nowrap;
+        }
+
+        .modal_actions button {
+            flex: 0 1 auto;
+        }
+    }
+
+    /* Desktop Styles */
+    @media screen and (min-width: 1024px) {
+        .input_field {
+            width    : 50vw;
+            max-width: 700px;
+        }
+
+        .inscan_modal {
+            max-width: 450px;
+        }
+    }
+
+    /* Large Desktop Styles */
+    @media screen and (min-width: 1440px) {
+        .input_field {
+            width    : 40vw;
+            max-width: 800px;
+        }
+    }
+
+    /* Small Mobile Optimization */
+    @media screen and (max-width: 480px) {
+        .label {
+            font-size: 13px;
+        }
+
+        .input_field {
+            padding   : 8px 12px;
+            font-size : 14px;
+            min-height: 38px;
+        }
+
+        .input_field input {
+            font-size: 14px;
+        }
+
+        .prevalues {
+            font-size: 11px;
+            padding  : 5px 7px;
+        }
+
+        .inscan_modal {
+            padding: 16px;
+        }
+
+        .modal_title {
+            font-size    : 16px;
+            margin-bottom: 16px;
+        }
+
+    .form_label {
+        font-size: 13px;
+    }
+.form_input {
+    font-size: 14px;
+        padding : 8px 10px;
+        }
+
+        .radio_group {
+            gap: 12px;
+        }
+
+        .modal_actions {
+            flex-direction: column;
+        }
+
+        .modal_actions button {
+            width: 100%;
+        }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+
+            .preval_close,
+            .form_input {
+                transition: none;
+    }
 }
 
-.radio {
-    display: flex;
-    gap : 5px;
-    align-items: center;
-    justify-content: center;
-}
-.inscan_modal .but {
-    margin-top: 10px;
+/* Print Styles */
+@media print {
+
+    .inscan_modal,
+    .inscan_modal_overlay {
+        display: none;
+    }
 }

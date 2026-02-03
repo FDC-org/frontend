@@ -1,160 +1,229 @@
-import "./navbar.css";
 import { IoIosNotifications } from "react-icons/io";
-import profileimg from "../../assets/profileimg.png";
 import { AiOutlineLogout } from "react-icons/ai";
 import { useEffect, useState } from "react";
-import { isLoggedIn } from "../auth";
 import axios from "axios";
-import Toast from "../toast/toast";
+import { isLoggedIn } from "../auth";
 import axiosInstance from "../axios";
+import Toast from "../toast/toast";
 import { Spinner } from "../spinner/spinner";
-import { el } from "date-fns/locale";
+import profileimg from "../../assets/profileimg.png";
+import "./navbar.css";
 
 function NavBar() {
-  const [token, setToken] = useState();
   const [isLogged, setIsLogged] = useState(false);
   const [hubname, setHubname] = useState("");
-  const [NAME, setNAME] = useState("");
-  const [type, setType] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userType, setUserType] = useState("");
   const [loading, setLoading] = useState(false);
-  const [track_awbno, setTrackAwbno] = useState("");
+  const [trackAwbNo, setTrackAwbNo] = useState("");
+
   useEffect(() => {
-    if (localStorage.getItem("token") === "undefined") {
+    const token = localStorage.getItem("token");
+
+    // Clean up invalid token
+    if (token === "undefined") {
       localStorage.removeItem("token");
       window.location.reload();
+      return;
     }
-    if (isLoggedIn()) {
-      setIsLogged(true);
-      setToken(localStorage.getItem("token"));
+
+    if (!isLoggedIn()) {
+      setIsLogged(false);
+      return;
+    }
+
+    setIsLogged(true);
+
+    const cachedType = localStorage.getItem("type");
+    const cachedHubname = localStorage.getItem("hubname");
+    const cachedUser = localStorage.getItem("user");
+
+    // Use cached data if available
+    if (cachedType && cachedHubname && cachedUser) {
+      setHubname(cachedHubname);
+      setUserType(cachedType);
+      setUserName(cachedUser);
+
+      // Verify token in background
+      axiosInstance
+        .get("verify_token/")
+        .then((response) => {
+          if (response.data.status === "new_token") {
+            localStorage.setItem("token", response.data.new_token);
+          } else if (
+            response.data.status === "invalid" ||
+            response.data.error === "invalid token"
+          ) {
+            handleLogout();
+          }
+        })
+        .catch((error) => console.error("Token verification failed:", error));
+    } else {
+      // Fetch user details
+      fetchUserDetails();
+    }
+
+    // Get CSRF token
+    axiosInstance.get("csrf/", { withCredentials: true });
+  }, []);
+
+  const fetchUserDetails = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        import.meta.env.VITE_API_LINK + "userdetails/",
+        {
+          headers: {
+            Authorization: `Token ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      const { error, status, new_token, code_name, type, name } = response.data;
+
+      // Handle invalid token
       if (
-        !!localStorage.getItem("type") &&
-        !!localStorage.getItem("hubname") &&
-        !!localStorage.getItem("user")
+        error === "invalid token" ||
+        error === "token expired" ||
+        status === "invalid"
       ) {
-        setHubname(localStorage.getItem("hubname"));
-        setType(localStorage.getItem("type"));
-        setNAME(localStorage.getItem("user"));
-        axiosInstance
-          .get("verify_token/")
-          .then((r) => {
-            if (r.data.status === "new_token") {
-              localStorage.removeItem("token");
-              localStorage.setItem("token", r.data.new_token);
-            } else if (r.data.status === "invalid") {
-              localStorage.removeItem("token");
-              localStorage.removeItem("type");
-              localStorage.removeItem("hubname");
-              localStorage.removeItem("user");
-              // window.location.href = "/login";
-            } else if (r.data.error === "invalid token") {
-              localStorage.removeItem("token");
-              localStorage.removeItem("type");
-              localStorage.removeItem("hubname");
-              localStorage.removeItem("user");
-              window.location.href = "/login";
-            }
-          })
-          .catch((e) => console.log(e));
-      } else {
-        setLoading(true);
-        axios
-          .get(import.meta.env.VITE_API_LINK + "userdetails/", {
-            headers: {
-              Authorization: "Token " + localStorage.getItem("token"),
-            },
-          })
-          .then((response) => {
-            console.log(response.data);
-            if (
-              response.data.error === "invalid token" ||
-              response.data.error === "token expired" ||
-              response.data.status === "invalid"
-            ) {
-              localStorage.removeItem("token");
-              localStorage.removeItem("type");
-              localStorage.removeItem("hubname");
-              localStorage.removeItem("user");
-              window.location.href = "/login";
-            }
-            if (response.data.new_token !== "none") {
-              localStorage.removeItem("token");
-              localStorage.setItem("token", response.data.new_token);
-              window.location.reload();
-            }
-            setHubname(response.data.code_name);
-            setType(response.data.type);
-            setNAME(response.data.name);
-            localStorage.setItem("type", response.data.type);
-            localStorage.setItem("hubname", response.data.code_name);
-            localStorage.setItem("user", response.data.name);
-            setLoading(false);
-          });
-        axiosInstance.get("csrf/", { withCredentials: true });
+        handleLogout();
+        return;
       }
+
+      // Handle token refresh
+      if (new_token && new_token !== "none") {
+        localStorage.setItem("token", new_token);
+        window.location.reload();
+        return;
+      }
+
+      // Update state and cache
+      setHubname(code_name);
+      setUserType(type);
+      setUserName(name);
+      localStorage.setItem("type", type);
+      localStorage.setItem("hubname", code_name);
+      localStorage.setItem("user", name);
+    } catch (error) {
+      console.error("Failed to fetch user details:", error);
+      Toast({ type: "error", message: "Failed to load user details" });
+    } finally {
+      setLoading(false);
     }
-  }, [isLoggedIn, setToken, setIsLogged, token]);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("type");
+    localStorage.removeItem("hubname");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
+
+  const handleNavigation = (path) => {
+    window.location.href = path;
+  };
+
+  const handleTrackSubmit = () => {
+    const awbNo = trackAwbNo.trim();
+
+    if (!awbNo) {
+      Toast({
+        type: "error",
+        message: "Enter AWB number to track",
+      });
+      return;
+    }
+
+    handleNavigation(`/track/${awbNo}`);
+  };
+
+  const handleTrackKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleTrackSubmit();
+    }
+  };
 
   return (
-    <nav>
-      <div className="nav_logo" onClick={() => (window.location.href = "/")}>
-        <div className="nav_title">FDC</div>
-        <div className="nav_subtitle">courier & cargo</div>
+    <nav className="navbar">
+      <div
+        className="navbar__brand"
+        onClick={() => handleNavigation("/")}
+        role="button"
+        tabIndex={0}
+        onKeyPress={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleNavigation("/");
+          }
+        }}
+      >
+        <h1 className="navbar__title">FDC</h1>
+        <span className="navbar__subtitle">courier & cargo</span>
       </div>
-      {isLogged &&
-        (loading ? (
-          <Spinner />
-        ) : (
-          <div className="nav_name">
-            {type.toUpperCase()} :
-            <div className="nav_hubname">{hubname.toUpperCase()}</div>
-          </div>
-        ))}
-      <div className="nav_right">
-        <div className="nav_track">
+
+      {isLogged && (
+        <div className="navbar__info">
+          {loading ? (
+            <Spinner size="sm" color="light" />
+          ) : (
+            <>
+              <span className="navbar__type">{userType.toUpperCase()}</span>
+              <span className="navbar__separator">:</span>
+              <span className="navbar__hubname">{hubname.toUpperCase()}</span>
+            </>
+          )}
+        </div>
+      )}
+
+      <div className="navbar__actions">
+        <div className="navbar__track">
           <input
             type="search"
-            onChange={(e) => setTrackAwbno(e.target.value)}
+            className="navbar__track-input"
+            placeholder="Enter AWB number"
+            value={trackAwbNo}
+            onChange={(e) => setTrackAwbNo(e.target.value)}
+            onKeyPress={handleTrackKeyPress}
+            aria-label="Track AWB number"
           />
-          <div
-            className="nav_button"
-            onClick={() => {
-              if (track_awbno.trim() === "") {
-                {
-                  Toast({
-                    type: "error",
-                    message: "Enter AWB number to track",
-                  });
-                }
-                return;
-              }
-              window.location.href = "/track/" + track_awbno;
-            }}
+          <button
+            className="navbar__track-button"
+            onClick={handleTrackSubmit}
+            aria-label="Track shipment"
           >
             Track
-          </div>
+          </button>
         </div>
+
         {isLogged && (
-          <div className="nav_login">
-            <div className="nav_notiv">
+          <div className="navbar__user">
+            <button
+              className="navbar__notification"
+              aria-label="Notifications"
+              title="Notifications"
+            >
               <IoIosNotifications />
+            </button>
+
+            <div className="navbar__profile">
+              <img
+                src={profileimg}
+                alt={userName}
+                className="navbar__profile-image"
+              />
+              <span className="navbar__profile-name">{userName}</span>
             </div>
-            <div className="nav_profile">
-              <img src={profileimg} alt="" />
-              <div className="nav_profilename">{NAME}</div>
-            </div>
-            <div
-              className="nav_logouticon"
-              onClick={() => {
-                localStorage.removeItem("token");
-                localStorage.removeItem("type");
-                localStorage.removeItem("hubname");
-                localStorage.removeItem("user");
-                <Toast />;
-                window.location.reload();
-              }}
+
+            <button
+              className="navbar__logout"
+              onClick={handleLogout}
+              aria-label="Logout"
+              title="Logout"
             >
               <AiOutlineLogout />
-            </div>
+            </button>
           </div>
         )}
       </div>

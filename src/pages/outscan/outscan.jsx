@@ -11,6 +11,7 @@ import Select from "react-select";
 import Modal from "react-modal";
 import { format } from "date-fns";
 import OutScanInputField from "../../components/input/outscaninput";
+import { MdQrCodeScanner, MdLocalShipping, MdDelete } from "react-icons/md";
 
 const OutScan = () => {
   const [prevalues, setPrevalues] = useState([]);
@@ -26,41 +27,40 @@ const OutScan = () => {
   const [tohub, setTohub] = useState("");
   const [vehiclenumberupdate, setVehiclenumberupdate] = useState("");
   const [loading, setLoading] = useState(false);
-  const [modalerror, setModalerror] = useState("")
-  const [oldmanifestnumber,setoldmanifestnumber] = useState("")
+  const [modalerror, setModalerror] = useState("");
+  const [oldmanifestnumber, setoldmanifestnumber] = useState("");
+
+  const navigate = useNavigate();
+
   const ondelete = (value) => {
     setPrevalues((prevalues) => prevalues.filter((item) => item !== value));
     setSavefortable((savefortable) =>
-      savefortable.filter((item) => item[2] !== value)
+      savefortable.filter((item) => item !== value),
     );
   };
-  const navigate = useNavigate();
+
   useEffect(() => {
-    if (!isLoggedIn()) navigate("/login");
+    if (!isLoggedIn()) {
+      navigate("/login");
+      return;
+    }
     setLoading(true);
+
+    // Fetch manifest number
     axiosInstance
       .get("getmanifestnumber/", { withCredentials: true })
-      .then((r) => setmanifestnumber(r.data.manifestno))
-      .catch((e) => console.log(e));
-      setoldmanifestnumber(manifestnumber)
-    axiosInstance
-      .get("vehicledetails/", { withCredentials: true })
       .then((r) => {
-        const details = r.data.data.map((item) => ({
-          value: item,
-          label: item.toUpperCase(),
-        }));
-        setVehiclenumberdata([
-          ...details,
-          { value: "__add_new__", label: "Add Vehicle" },
-        ]);
+        setmanifestnumber(r.data.manifestno);
+        setoldmanifestnumber(r.data.manifestno);
       })
       .catch((e) => console.log(e));
+
+    // Fetch hub list
     axiosInstance
       .get("gethublist/", { withCredentials: true })
       .then((r) => {
         const details = r.data.hub.map((item) => ({
-          value: item.name,
+          value: item.code,
           label: item.name,
         }));
         setTohubdata([...details]);
@@ -70,15 +70,7 @@ const OutScan = () => {
         console.log(e);
         setLoading(false);
       });
-  }, [
-    isLoggedIn,
-    navigate,
-    axiosInstance,
-    setVehiclenumberdata,
-    setmanifestnumber,
-    setVehiclenumberdata,
-    setTohubdata,
-  ]);
+  }, [navigate]);
 
   const handlechange = (selected) => {
     if (selected.value === "__add_new__") {
@@ -89,211 +81,244 @@ const OutScan = () => {
   };
 
   const handleSumit = () => {
-    if (prevalues && prevalues.length != 0) {
-      if (vehiclenumber !=="")
-      {
-        if(tohub !=='')
-        {
-        setClick(true);
-      axiosInstance
-        .post("outscan/", {
-          awbno: savefortable,
-          manifest_number: manifestnumber,
-          vehicle_number: vehiclenumber,
-          tohub: tohub,
-          date: format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
-        })
-        .then((r) => {
-          if (r.data.status === "success") {
-            setStatus(r.data["status"]);
-            setToast(true);
-            setClick(false);
-            setPrevalues([]);
-            setoldmanifestnumber(manifestnumber)
-            setmanifestnumber(r.data.manifest_number)
-          }
-        })
-        .catch((r) => {
-          setStatus("error");
-          console.log(r);
+    if (!prevalues || prevalues.length === 0) {
+      setStatus("Enter at least one AWB number");
+      setToast(true);
+      return;
+    }
+
+    if (tohub === "") {
+      setStatus("Select destination hub");
+      setToast(true);
+      return;
+    }
+
+    setClick(true);
+    axiosInstance
+      .post("outscanmobile/", {
+        awbno: savefortable,
+        manifest_number: manifestnumber,
+        tohub: tohub,
+        date: format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
+      })
+      .then((r) => {
+        if (r.data.status === "success") {
+          setStatus("Successfully outscanned items");
           setToast(true);
           setClick(false);
-        });
+          setSavefortable([]);
+          setPrevalues([]);
+          setoldmanifestnumber(manifestnumber);
+          setmanifestnumber(r.data.manifest_number);
         }
-        else
-        {
-          setStatus("Enter To HUB")
-          setToast(true)
-        }
+      })
+      .catch((r) => {
+        setStatus("Error processing outscan");
+        console.log(r);
+        setToast(true);
+        setClick(false);
+      });
+  };
+
+  const handleClearAll = () => {
+    if (prevalues.length > 0) {
+      if (window.confirm(`Clear all ${prevalues.length} scanned items?`)) {
+        setPrevalues([]);
+        setSavefortable([]);
       }
-        else{
-          setStatus("Enter Vehicle Number")
-          setToast(true)
-        }
-    } else {
-      setStatus("Enter Atleast one AWB number");
-      setToast(true);
     }
   };
-  const handlevehicleupdate = () => {
-    if (vehiclenumberupdate !== "") {
-      setClick(true)
-      axiosInstance
-        .post(
-          "vehicledetails/",
-          { vehicle_number: vehiclenumberupdate },
-          { withCredentials: true }
-        )
-        .then((r) => {console.log(r);
-          setopenmodel(false)
-          setClick(false)
-          setStatus("success");
-          setToast(true)
-          setVehiclenumberdata([
-            { value: vehiclenumberupdate, label: vehiclenumberupdate },
-            ...vehiclenumberdata,
-          ]);
-          setVehiclenumberupdate("")
-        })
-        .catch((e) => {
-          console.log(e)
-          setModalerror("error")
-          setStatus("error")
-          setToast(true)
-        });
-    }
+
+  const customSelectStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      borderColor: state.isFocused ? "#134d0a" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 3px rgba(19, 77, 10, 0.1)" : "none",
+      "&:hover": {
+        borderColor: "#134d0a",
+      },
+      minHeight: "42px",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 25,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? "#134d0a"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "white",
+      color: state.isSelected ? "white" : "#1f2937",
+    }),
   };
+
   return loading ? (
-    <Spinner />
+    <div className="outscan__loading-wrapper">
+      <Spinner />
+    </div>
   ) : (
-    <div className="inscan">
-      <div className="inscan_con">
-        <div className="inscan_form outscan_form">
-          <div className="outscan_con">
-            <div className="input_con">
-              <label htmlFor="" className="label">
-                Manifest Number
-              </label>
-              <input
-                type="text"
-                name=""
-                id=""
-                className="outscan_input disabled"
-                disabled
-                value={manifestnumber}
-              />
+    <div className="outscan">
+      <div className="outscan__container">
+        {/* Header Card */}
+        <div className="outscan__header-card">
+          <div className="outscan__header-content">
+            <div className="outscan__header-left">
+              <MdLocalShipping className="outscan__header-icon" />
+              <div>
+                <h1 className="outscan__title">Outscan</h1>
+                <p className="outscan__subtitle">
+                  Scan packages leaving your hub
+                </p>
+              </div>
             </div>
-            <div className="input_con">
-              <label htmlFor="" className="label">
-                Vehicle Number
-              </label>
-              <Select
-                options={vehiclenumberdata}
-                className="outscan_input select"
-                onChange={handlechange}
-                placeholder={"Select Vehicle"}
-              />
-            </div>
-            <div className="input_con">
-              <label htmlFor="" className="label">
-                To HUB
-              </label>
-              <Select
-                options={tohubdata}
-                className="outscan_input select"
-                onChange={(e) => setTohub(e.value)}
-                placeholder={"Select HUB"}
-              />
+            <div className="outscan__counter">
+              <span className="outscan__counter-label">SCANNED</span>
+              <span className="outscan__counter-value">{prevalues.length}</span>
             </div>
           </div>
-          <OutScanInputField
-            name={"AWB No"}
-            type={"text"}
-            required={true}
-            onclick={setPrevalues}
-            prevalues={prevalues}
-            ondelete={ondelete}
-            setSavefortable={setSavefortable}
-            savefortable={savefortable}
-            manifestnumber={manifestnumber}
-            to_hub={tohub}
-          />
-          {click ? (
-            <Spinner />
-          ) : (
-            <Button name={"Submit"} onclick={handleSumit} />
-          )}
+        </div>
+
+        {/* Main Grid */}
+        <div className="outscan__main-grid">
+          {/* Left Column - Input Card */}
+          <div className="outscan__input-card">
+            {/* Manifest and Hub Selection */}
+            <div className="outscan__details-section">
+              <div className="outscan__form-group">
+                <label className="outscan__label">Manifest Number</label>
+                <input
+                  type="text"
+                  className="outscan__input outscan__input--disabled"
+                  disabled
+                  value={manifestnumber}
+                />
+              </div>
+
+              <div className="outscan__form-group">
+                <label className="outscan__label">
+                  Destination Hub <span className="outscan__required">*</span>
+                </label>
+                <Select
+                  options={tohubdata}
+                  className="outscan__select"
+                  onChange={(e) => setTohub(e.value)}
+                  placeholder="Select destination hub"
+                  styles={customSelectStyles}
+                />
+              </div>
+            </div>
+
+            {/* AWB Input */}
+            <div className="outscan__awb-section">
+              <label className="outscan__label">
+                AWB Number <span className="outscan__required">*</span>
+              </label>
+              <OutScanInputField
+                name=""
+                type="text"
+                required={true}
+                onclick={setPrevalues}
+                prevalues={prevalues}
+                ondelete={ondelete}
+                setSavefortable={setSavefortable}
+                savefortable={savefortable}
+                manifestnumber={manifestnumber}
+                to_hub={tohub}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="outscan__button-group">
+              {click ? (
+                <button
+                  className="outscan__submit-btn outscan__submit-btn--loading"
+                  disabled
+                >
+                  <Spinner size="sm" color="light" />
+                  <span>Processing...</span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="outscan__submit-btn"
+                    onClick={handleSumit}
+                    disabled={prevalues.length === 0}
+                  >
+                    Submit Outscan
+                  </button>
+                  {prevalues.length > 0 && (
+                    <button
+                      className="outscan__clear-btn"
+                      onClick={handleClearAll}
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column - Scanned Items */}
+          <div className="outscan__items-card">
+            <h2 className="outscan__items-title">Scanned Items</h2>
+
+            <div className="outscan__items-content">
+              {prevalues.length === 0 ? (
+                <div className="outscan__empty">
+                  <MdQrCodeScanner className="outscan__empty-icon" />
+                  <p className="outscan__empty-text">No items scanned yet</p>
+                </div>
+              ) : (
+                <div className="outscan__table-wrapper">
+                  <table className="outscan__table">
+                    <thead>
+                      <tr>
+                        <th>S.No</th>
+                        <th>AWB Number</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {savefortable.map((value, index) => (
+                        <tr key={index}>
+                          <td>{index + 1}</td>
+                          <td className="outscan__awb">{value}</td>
+                          <td>
+                            <button
+                              className="outscan__delete-btn"
+                              onClick={() => ondelete(value)}
+                              title="Remove item"
+                            >
+                              <MdDelete />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-      <div className="inscan_table">
-        <table className="inscan_table1">
-          <thead>
-            <tr>
-              <th>S. No.</th>
-              <th>Date</th>
-              <th>Manifest Number</th>
-              <th>AWB No</th>
-              <th>To HUB</th>
-              <th>Type</th>
-              <th>Pcs</th>
-              <th>Wt</th>
-            </tr>
-          </thead>
-          <tbody>
-            {savefortable.map((value, index) => (
-              <tr key={value}>
-                <td>{index + 1}</td>
-                <td>{value[0]}</td>
-                <td>{value[1]}</td>
-                <td
-                  onClick={() => navigate("/track/" + value[2])}
-                  className="onclick"
-                >
-                  {value[2]}
-                </td>
-                <td>{value[3]}</td>
-                <td>{value[4]}</td>
-                <td>{value[5]}</td>
-                <td>{value[6]}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+
       {toast && (
         <Toast
           message={status}
-          type={status == "success" ? "success" : "error"}
+          type={
+            status.includes("Success") || status === "success"
+              ? "success"
+              : "error"
+          }
           onclose={() => setToast(false)}
         />
-      )}
-      {openmodel && (
-        <Modal
-          isOpen={openmodel}
-          onRequestClose={() => setopenmodel(false)}
-          className="inscan_modal"
-        >
-          <label>Vehicle Number</label>
-          <input
-            type="text"
-            onChange={(e) =>
-              setVehiclenumberupdate(e.target.value.toUpperCase())
-            }
-            className="input_field modal"
-            required
-            value={vehiclenumberupdate}
-          />
-          <div className="but">
-            {" "}
-            {click ? (
-              <Spinner />
-            ) : (
-              <Button name={"Submit"} onclick={() => handlevehicleupdate()} />
-            )}
-          </div>
-        </Modal>
       )}
     </div>
   );
 };
+
 export default OutScan;

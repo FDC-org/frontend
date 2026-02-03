@@ -42,44 +42,57 @@ const OutScanInputField = ({
       setError("");
       if (e.key === "Enter" || e.key === "Tab" || e.key === " ") {
         if (awbno !== "") {
-          if (awbno.length == 9) {
+          if (awbno.length == 10) {
             if (!prevalues.includes(awbno)) {
-              setloading(true);
-              axios
-                .post(
-                  import.meta.env.VITE_API_LINK + "bookingdetails/",
-                  { awbno: awbno },
-                  {
-                    headers: {
-                      Authorization: "Token " + localStorage.getItem("token"),
-                      " X-CSRFToken": localStorage.getItem("csrf_token"),
-                    },
-                    withCredentials: true,
-                  }
-                )
-                .then((response) => {
-                  if (response.data.status === "found") {
-                    onclick((val) => [...prevalues, awbno]);
-                    setSavefortable((val) => [
-                      ...savefortable,
-                      [
-                        format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
-                        manifest_number,
-                        awbno,
-                        tohub,
-                        response.data.type,
-                        response.data.pcs,
-                        response.data.wt,
-                      ],
-                    ]);
-                    setAwbno("");
-                  }
-                  if (response.data.status === "not found") {
-                    setPopup(true);
-                  }
-                  setloading(false);
-                })
-                .catch((e) => setloading(false));
+              // setloading(true);
+              onclick((val) => [...prevalues, awbno]);
+              setSavefortable((val) => [
+                ...savefortable,
+
+                // format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
+                // manifest_number,
+                awbno,
+                // tohub,
+                // response.data.type,
+                // response.data.pcs,
+                // response.data.wt,
+              ]);
+              setAwbno("");
+              // axios
+              //   .post(
+              //     import.meta.env.VITE_API_LINK + "bookingdetails/",
+              //     { awbno: awbno },
+              //     {
+              //       headers: {
+              //         Authorization: "Token " + localStorage.getItem("token"),
+              //         " X-CSRFToken": localStorage.getItem("csrf_token"),
+              //       },
+              //       withCredentials: true,
+              //     },
+              //   )
+              //   .then((response) => {
+              //     if (response.data.status === "found") {
+              //       onclick((val) => [...prevalues, awbno]);
+              //       setSavefortable((val) => [
+              //         ...savefortable,
+              //         [
+              //           format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
+              //           manifest_number,
+              //           awbno,
+              //           tohub,
+              //           response.data.type,
+              //           response.data.pcs,
+              //           response.data.wt,
+              //         ],
+              //       ]);
+              //       setAwbno("");
+              //     }
+              //     if (response.data.status === "not found") {
+              //       setPopup(true);
+              //     }
+              //     setloading(false);
+              //   })
+              //   .catch((e) => setloading(false));
             } else {
               setAwbno("");
             }
@@ -108,7 +121,7 @@ const OutScanInputField = ({
               // " X-CSRFToken": getCookie(),
             },
             withCredentials: true,
-          }
+          },
         )
         .then((response) => {
           if (response.data.status === "added") {
@@ -141,20 +154,6 @@ const OutScanInputField = ({
         {name} {required && "*"}
       </label>
       <div className="input_field">
-        <div className="previousval">
-          {prevalues.map((value) => (
-            <div className="prevalues" key={value}>
-              {value}
-              <div className="preval_close">
-                <IoIosClose
-                  size={15}
-                  onClick={() => ondelete(value)}
-                  cursor={"pointer"}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
         <input
           type={type}
           name={name}
@@ -171,6 +170,20 @@ const OutScanInputField = ({
           pattern="[0-9]*"
         />
         {loading && <Spinner />}
+      </div>
+      <div className="previousval">
+        {prevalues.map((value) => (
+          <div className="prevalues" key={value}>
+            {value}
+            <div className="preval_close">
+              <IoIosClose
+                size={15}
+                onClick={() => ondelete(value)}
+                cursor={"pointer"}
+              />
+            </div>
+          </div>
+        ))}
       </div>
       <Modal
         isOpen={popup}
