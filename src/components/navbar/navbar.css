@@ -1,110 +1,300 @@
-nav {
-    margin         : 0;
-    padding        : 0;
-    background : #134d0a;
+.navbar {
+    background: linear-gradient(135deg, #134d0a 0%, #0f3d08 100%);
     display        : flex;
     align-items    : center;
     justify-content: space-between;
-    padding        : 0 20px;
+    padding    : 16px 24px;
+    box-shadow : 0 2px 8px rgba(0, 0, 0, 0.15);
+    position   : sticky;
+    top        : 0;
+    z-index    : 1000;
+    min-height : 64px;
 }
 
-.nav_logo {
-    display       : flex;
-    flex-direction: row;
-    align-items   : baseline;
-    gap           : 5px;
-    font-weight   : bold;
-    color         : #FEF9FF;
-    cursor: pointer;
+/* Brand */
+.navbar__brand {
+    display    : flex;
+    align-items: baseline;
+    gap        : 8px;
+    cursor     : pointer;
+    transition : opacity 0.2s ease;
+    user-select: none;
 }
 
-.nav_title {
-    font-size: 40px;
-    padding  : 5px;
+.navbar__brand:hover {
+    opacity: 0.9;
 }
 
-.nav_subtitle {
-    font-size: 16px;
+.navbar__title {
+    font-size  : 2.5rem;
+    font-weight: 700;
+    color      : #fef9ff;
+    margin     : 0;
+    letter-spacing: -0.5px;
 }
 
-.nav_name {
-    font-size: 20px;
-    color    : white;
-    display  : flex;
-    gap      : .7rem;
-
+.navbar__subtitle {
+    font-size     : 1rem;
+    font-weight   : 600;
+    color         : rgba(254, 249, 255, 0.85);
+    text-transform: lowercase;
 }
 
-.nav_right {
+/* Info Section */
+.navbar__info {
+    display    : flex;
+    align-items: center;
+    gap        : 8px;
+    font-size  : 1.125rem;
+    font-weight: 600;
+    color      : #ffffff;
+}
+
+.navbar__type {
+    opacity: 0.9;
+}
+
+.navbar__separator {
+    opacity: 0.5;
+}
+
+.navbar__hubname {
+    color      : #fef9ff;
+    font-weight: 700;
+}
+
+/* Actions */
+.navbar__actions {
+    display    : flex;
+    align-items: center;
+    gap        : 24px;
+}
+
+/* Track Section */
+.navbar__track {
+    display      : flex;
+    align-items  : stretch;
+    background   : rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    overflow     : hidden;
+    box-shadow   : 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition   : box-shadow 0.2s ease;
+}
+
+.navbar__track:focus-within {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.navbar__track-input {
+    border    : none;
+    outline   : none;
+    background: transparent;
+    padding   : 10px 16px;
+    font-size : 0.875rem;
+    color     : #1a202c;
+    min-width : 200px;
+}
+
+.navbar__track-input::placeholder {
+    color: #a0aec0;
+}
+
+.navbar__track-button {
+    background : #2d3748;
+    color      : #ffffff;
+    border     : none;
+    padding    : 10px 20px;
+    font-size  : 0.875rem;
+    font-weight: 600;
+    cursor     : pointer;
+    transition : background 0.2s ease;
+    white-space: nowrap;
+}
+
+.navbar__track-button:hover {
+    background: #1a202c;
+}
+
+.navbar__track-button:active {
+    background: #0d1117;
+}
+
+/* User Section */
+.navbar__user {
+    display    : flex;
+    align-items: center;
+    gap        : 20px;
+}
+
+.navbar__notification,
+.navbar__logout {
+    background: transparent;
+    border    : none;
+    color     : #ffffff;
+    font-size : 1.375rem;
+    cursor    : pointer;
+    padding   : 8px;
     display        : flex;
-    flex-direction : row;
-    gap            : 10px;
+    align-items : center;
     justify-content: center;
-    gap            : 20px;
+    border-radius : 6px;
+    transition    : all 0.2s ease;
+    }
+
+    .navbar__notification:hover,
+    .navbar__logout:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform : scale(1.1);
+    }
+
+    .navbar__notification:active,
+    .navbar__logout:active {
+        transform: scale(0.95);
+    }
+
+    .navbar__profile {
+        display    : flex;
+        align-items: center;
+        gap        : 10px;
+    }
+
+    .navbar__profile-image {
+        width        : 36px;
+        height       : 36px;
+        border-radius: 50%;
+        border       : 2px solid rgba(255, 255, 255, 0.3);
+        object-fit   : cover;
+        transition   : border-color 0.2s ease;
+    }
+
+    .navbar__profile:hover .navbar__profile-image {
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .navbar__profile-name {
+        font-size  : 0.875rem;
+        font-weight: 500;
+        color      : #ffffff;
+    }
+
+    /* Tablet */
+    @media (max-width: 1024px) {
+        .navbar {
+            padding: 12px 20px;
+        }
+
+        .navbar__title {
+            font-size: 2rem;
+        }
+
+        .navbar__subtitle {
+            font-size: 0.875rem;
+        }
+
+        .navbar__info {
+            font-size: 1rem;
+        }
+
+        .navbar__track-input {
+            min-width: 160px;
+        }
+
+    .navbar__actions {
+        gap: 16px;
+    }
+
+    .navbar__user {
+        gap: 16px;
+    }
 }
 
-.nav_track {
-    display        : flex;
-    flex-direction : row;
-    justify-content: space-evenly;
-    align-items    : center;
+/* Mobile */
+@media (max-width: 768px) {
+    .navbar {
+        flex-wrap: wrap;
+        gap      : 12px;
+        padding  : 12px 16px;
+    }
 
+    .navbar__brand {
+        flex: 1;
+    }
+
+    .navbar__title {
+        font-size: 1.75rem;
+    }
+
+    .navbar__subtitle {
+        font-size: 0.75rem;
+    }
+
+    .navbar__info {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        font-size   : 0.875rem;
+        padding-top : 8px;
+        border-top  : 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar__actions {
+            gap            : 12px;
+            flex-wrap      : wrap;
+            justify-content: flex-end;
+        }
+
+        .navbar__track {
+            width: 100%;
+            order: 4;
+        }
+
+        .navbar__track-input {
+            flex     : 1;
+            min-width: 0;
+        }
+
+        .navbar__user {
+            gap: 12px;
+        }
+
+        .navbar__profile-name {
+            display: none;
+        }
+
+        .navbar__notification,
+        .navbar__logout {
+            font-size: 1.25rem;
+            padding  : 6px;
+        }
+        }
+
+        @media (max-width: 480px) {
+            .navbar__title {
+                font-size: 1.5rem;
+            }
+
+            .navbar__subtitle {
+                display: none;
+            }
+
+            .navbar__track-button {
+                padding: 10px 16px;
+    }
+
+    .navbar__profile-image {
+        width : 32px;
+        height: 32px;
+    }
 }
 
-.nav_track input {
-    color        : black;
-    border-radius: 6px 0 0 6px;
-    border       : none;
-    outline      : none;
-    background   : white;
-    padding      : none;
-    padding      : 6px 20px;
-}
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
 
-.nav_track .nav_button {
-    border-radius: 0px 5px 5px 0px;
-    background : rgb(163, 163, 163);
-    padding      : 5px 20px;
-    text-align   : center;
-    font-size    : 14px;
-    outline      : 0;
-    border       : 0;
-    cursor       : pointer;
-    font-weight  : bold;
-}
-
-.nav_login {
-    display        : flex;
-    flex-direction : row;
-    gap            : 18px;
-    align-items    : center;
-    justify-content: space-evenly;
-}
-
-.nav_notiv,
-.nav_logouticon {
-    color    : white;
-    width    : 20px;
-    height   : 20px;
-    font-size: 20px;
-    cursor   : pointer;
-}
-
-.nav_profile {
-    display        : flex;
-    flex-direction : row;
-    gap            : 5px;
-    align-items    : center;
-    justify-content: center;
-}
-
-.nav_profile img {
-    width        : 30px;
-    height       : 30px;
-    border-radius: 30px;
-}
-
-.nav_profilename {
-    font-size: 14px;
-    color    : white;
+    .navbar__brand,
+    .navbar__track,
+    .navbar__notification,
+    .navbar__logout,
+    .navbar__profile-image {
+        transition: none;
+    }
 }
