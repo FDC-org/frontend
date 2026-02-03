@@ -4,6 +4,20 @@ import axiosInstance from "../../components/axios";
 import Toast from "../../components/toast/toast";
 import { Spinner } from "../../components/spinner/spinner";
 import { format } from "date-fns";
+import {
+  FaFileAlt,
+  FaCalendar,
+  FaCheck,
+  FaTimes,
+  FaUndo,
+  FaTruck,
+  FaUser,
+  FaPhone,
+  FaCamera,
+  FaEdit,
+  FaCheckCircle,
+  FaTimesCircle,
+} from "react-icons/fa";
 import "./delivery.css";
 
 const DeliveryDRSList = () => {
@@ -74,7 +88,7 @@ const DeliveryDRSList = () => {
   const openPopupForBulk = () => {
     if (selectedAwb.size === 0) return;
 
-    const list = Array.from(selectedAwb); // freeze immediately
+    const list = Array.from(selectedAwb);
     setPopupAwbs(list);
 
     resetForm();
@@ -83,7 +97,7 @@ const DeliveryDRSList = () => {
 
   // ---------------- OPEN POPUP (SINGLE ROW) ----------------
   const openPopupForSingle = (awbno) => {
-    setPopupAwbs([awbno]); // only this awb
+    setPopupAwbs([awbno]);
     resetForm();
     setShowPopup(true);
   };
@@ -121,7 +135,7 @@ const DeliveryDRSList = () => {
       setSubmitting(true);
 
       const formData = new FormData();
-      formData.append("awbno", JSON.stringify(popupAwbs)); // 🔥 FIXED
+      formData.append("awbno", JSON.stringify(popupAwbs));
       formData.append("status", status);
       formData.append("date", format(new Date(), "yyyy-MM-dd"));
 
@@ -175,246 +189,366 @@ const DeliveryDRSList = () => {
     }
   };
 
+  // Statistics
+  const stats = {
+    total: awbList.length,
+    delivered: awbList.filter((item) => item.status === "delivered").length,
+    ofd: awbList.filter((item) => item.status === "ofd").length,
+    rto: awbList.filter((item) => item.status === "rto").length,
+    undelivered: awbList.filter((item) => item.status === "undelivered").length,
+  };
+
   return (
-    <div className="inscan">
-      {/* ---------------- TOP BAR ---------------- */}
-      <div
-        style={{
-          width: "70%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "15px",
-          fontWeight: "bold",
-        }}
-      >
-        <div>
-          DRS No : {drsno} &nbsp;&nbsp;| &nbsp;&nbsp; Date :{" "}
-          {drsDate ? format(new Date(drsDate), "dd-MM-yyyy") : ""}
-        </div>
+    <div className="delivery-page">
+      <div className="delivery-container">
+        {/* ---------------- HEADER WITH STATS ---------------- */}
+        <div className="delivery-header">
+          <div className="header-info">
+            <div className="drs-info-card">
+              <FaFileAlt className="info-icon" />
+              <div className="info-details">
+                <span className="info-label">DRS Number</span>
+                <span className="info-value">{drsno}</span>
+              </div>
+            </div>
+            <div className="drs-info-card">
+              <FaCalendar className="info-icon" />
+              <div className="info-details">
+                <span className="info-label">Date</span>
+                <span className="info-value">
+                  {drsDate ? format(new Date(drsDate), "dd-MM-yyyy") : ""}
+                </span>
+              </div>
+            </div>
+          </div>
 
-        {selectedAwb.size > 0 && (
-          <button
-            onClick={openPopupForBulk}
-            style={{
-              padding: "8px 25px",
-              background: "#1f2a37",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-          >
-            Update ({selectedAwb.size})
-          </button>
-        )}
-      </div>
-
-      {/* ---------------- TABLE ---------------- */}
-      <div className="inscan_table" style={{ width: "70%" }}>
-        <table className="inscan_table1">
-          <thead>
-            <tr>
-              <th>
-                <input
-                  type="checkbox"
-                  checked={selectAll}
-                  onChange={handleSelectAll}
-                />
-              </th>
-              <th>AWB No</th>
-              <th>Pcs</th>
-              <th>Wt</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {awbList.map((row) => {
-              const checked = selectedAwb.has(row.awbno);
-
-              return (
-                <tr key={row.awbno}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      disabled={row.status !== "ofd"}
-                      checked={checked}
-                      onChange={() => toggleSelect(row.awbno)}
-                    />
-                  </td>
-
-                  <td>{row.awbno}</td>
-                  <td>{row.pcs}</td>
-                  <td>{row.wt}</td>
-
-                  <td>
-                    {row.status === "delivered" && (
-                      <span style={{ color: "green", fontWeight: "bold" }}>
-                        Delivered
-                      </span>
-                    )}
-                    {row.status === "rto" && (
-                      <span style={{ color: "orange", fontWeight: "bold" }}>
-                        RTO
-                      </span>
-                    )}
-                    {row.status === "undelivered" && (
-                      <span style={{ color: "red", fontWeight: "bold" }}>
-                        Undelivered
-                      </span>
-                    )}
-                    {row.status === "ofd" && <span>OFD</span>}
-                  </td>
-
-                  {/* ACTION BUTTON */}
-                  <td>
-                    {row.status === "ofd" && (
-                      <button
-                        onClick={() => openPopupForSingle(row.awbno)}
-                        style={{
-                          color: "white",
-                          backgroundColor: "#2563eb",
-                          border: "none",
-                          padding: "5px 12px",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Update
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ---------------- DELIVERY UPDATE POPUP ---------------- */}
-      {showPopup && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 999,
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              width: "400px",
-            }}
-          >
-            <h3>Delivery Update</h3>
-
-            <div style={{ fontSize: "12px", marginBottom: "10px" }}>
-              Updating AWBs: {popupAwbs.join(", ")}
+          {/* Stats Cards */}
+          <div className="stats-grid">
+            <div className="stat-card stat-total">
+              <div className="stat-icon">
+                <FaFileAlt />
+              </div>
+              <div className="stat-info">
+                <span className="stat-value">{stats.total}</span>
+                <span className="stat-label">Total</span>
+              </div>
             </div>
 
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "6px",
-                border: "1px solid black",
-                marginBottom: "15px",
-              }}
-            >
-              <option value="">Select Status</option>
-              <option value="delivered">Delivered</option>
-              <option value="undelivered">Undelivered</option>
-              <option value="rto">RTO</option>
-            </select>
+            <div className="stat-card stat-delivered">
+              <div className="stat-icon">
+                <FaCheckCircle />
+              </div>
+              <div className="stat-info">
+                <span className="stat-value">{stats.delivered}</span>
+                <span className="stat-label">Delivered</span>
+              </div>
+            </div>
 
-            {status === "delivered" && (
-              <>
-                <input
-                  type="text"
-                  placeholder="Receiver Name"
-                  value={receiverName}
-                  onChange={(e) => setReceiverName(e.target.value)}
-                  style={{ width: "100%", marginBottom: "8px", padding: "8px" }}
-                />
+            <div className="stat-card stat-ofd">
+              <div className="stat-icon">
+                <FaTruck />
+              </div>
+              <div className="stat-info">
+                <span className="stat-value">{stats.ofd}</span>
+                <span className="stat-label">Out for Delivery</span>
+              </div>
+            </div>
 
-                <input
-                  type="text"
-                  placeholder="Receiver Phone"
-                  value={receiverPhone}
-                  onChange={(e) => setReceiverPhone(e.target.value)}
-                  style={{ width: "100%", marginBottom: "8px", padding: "8px" }}
-                />
+            <div className="stat-card stat-undelivered">
+              <div className="stat-icon">
+                <FaTimesCircle />
+              </div>
+              <div className="stat-info">
+                <span className="stat-value">{stats.undelivered}</span>
+                <span className="stat-label">Undelivered</span>
+              </div>
+            </div>
 
-                {image && (
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt="preview"
-                    style={{
-                      maxWidth: "120px",
-                      maxHeight: "120px",
-                      objectFit: "cover",
-                      borderRadius: "6px",
-                      border: "1px solid #ccc",
-                      marginBottom: "8px",
-                    }}
-                  />
-                )}
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImagePick}
-                />
-              </>
-            )}
-
-            {(status === "undelivered" || status === "rto") && (
-              <input
-                type="text"
-                placeholder="Reason"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
-              />
-            )}
-
-            <div
-              style={{
-                marginTop: "20px",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <button className="button" onClick={() => setShowPopup(false)}>Cancel</button>
-              <button onClick={handleSubmitUpdate} disabled={submitting} className="button">
-                {submitting ? "Updating..." : "Update"}
-              </button>
+            <div className="stat-card stat-rto">
+              <div className="stat-icon">
+                <FaUndo />
+              </div>
+              <div className="stat-info">
+                <span className="stat-value">{stats.rto}</span>
+                <span className="stat-label">RTO</span>
+              </div>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Toast */}
-      {toast && (
-        <Toast
-          message={statusMsg}
-          type={statusMsg === "Success" ? "success" : "error"}
-          onclose={() => setToast(false)}
-        />
-      )}
+        {/* ---------------- BULK UPDATE BUTTON ---------------- */}
+        {selectedAwb.size > 0 && (
+          <div className="bulk-update-bar">
+            <span className="selected-count">
+              {selectedAwb.size} item{selectedAwb.size > 1 ? "s" : ""} selected
+            </span>
+            <button onClick={openPopupForBulk} className="btn-bulk-update">
+              <FaEdit />
+              Bulk Update ({selectedAwb.size})
+            </button>
+          </div>
+        )}
+
+        {/* ---------------- TABLE ---------------- */}
+        <div className="delivery-table-section">
+          <div className="table-container">
+            <table className="delivery-table">
+              <thead>
+                <tr>
+                  <th className="th-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                      className="checkbox-input"
+                    />
+                  </th>
+                  <th>AWB Number</th>
+                  <th className="th-narrow">Pieces</th>
+                  <th className="th-narrow">Weight</th>
+                  <th>Status</th>
+                  <th className="th-action">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {awbList.map((row) => {
+                  const checked = selectedAwb.has(row.awbno);
+
+                  return (
+                    <tr
+                      key={row.awbno}
+                      className={row.status !== "ofd" ? "row-disabled" : ""}
+                    >
+                      <td className="td-checkbox">
+                        <input
+                          type="checkbox"
+                          disabled={row.status !== "ofd"}
+                          checked={checked}
+                          onChange={() => toggleSelect(row.awbno)}
+                          className="checkbox-input"
+                        />
+                      </td>
+
+                      <td className="td-awb">{row.awbno}</td>
+                      <td className="td-narrow">{row.pcs}</td>
+                      <td className="td-narrow">{row.wt}</td>
+
+                      <td>
+                        {row.status === "delivered" && (
+                          <span className="status-badge status-delivered">
+                            <FaCheckCircle />
+                            Delivered
+                          </span>
+                        )}
+                        {row.status === "rto" && (
+                          <span className="status-badge status-rto">
+                            <FaUndo />
+                            RTO
+                          </span>
+                        )}
+                        {row.status === "undelivered" && (
+                          <span className="status-badge status-undelivered">
+                            <FaTimesCircle />
+                            Undelivered
+                          </span>
+                        )}
+                        {row.status === "ofd" && (
+                          <span className="status-badge status-ofd">
+                            <FaTruck />
+                            Out for Delivery
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="td-action">
+                        {row.status === "ofd" && (
+                          <button
+                            onClick={() => openPopupForSingle(row.awbno)}
+                            className="btn-update-single"
+                          >
+                            <FaEdit />
+                            Update
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ---------------- DELIVERY UPDATE POPUP ---------------- */}
+        {showPopup && (
+          <div className="popup-overlay" onClick={() => setShowPopup(false)}>
+            <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+              <div className="popup-header">
+                <h3 className="popup-title">
+                  <FaEdit />
+                  Delivery Update
+                </h3>
+                <button
+                  className="popup-close"
+                  onClick={() => setShowPopup(false)}
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="popup-body">
+                <div className="awb-list-box">
+                  <span className="awb-list-label">Updating AWBs:</span>
+                  <div className="awb-chips">
+                    {popupAwbs.map((awb) => (
+                      <span key={awb} className="awb-chip">
+                        {awb}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">
+                    <FaTruck className="label-icon" />
+                    Delivery Status *
+                  </label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="form-select"
+                  >
+                    <option value="">Select Status...</option>
+                    <option value="delivered">✓ Delivered</option>
+                    <option value="undelivered">✗ Undelivered</option>
+                    <option value="rto">↻ RTO (Return to Origin)</option>
+                  </select>
+                </div>
+
+                {status === "delivered" && (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">
+                        <FaUser className="label-icon" />
+                        Receiver Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter receiver name"
+                        value={receiverName}
+                        onChange={(e) => setReceiverName(e.target.value)}
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">
+                        <FaPhone className="label-icon" />
+                        Receiver Phone
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter phone number"
+                        value={receiverPhone}
+                        onChange={(e) => setReceiverPhone(e.target.value)}
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">
+                        <FaCamera className="label-icon" />
+                        Proof of Delivery *
+                      </label>
+
+                      {image && (
+                        <div className="image-preview">
+                          <img
+                            src={URL.createObjectURL(image)}
+                            alt="preview"
+                            className="preview-img"
+                          />
+                          <button
+                            className="remove-image"
+                            onClick={() => setImage(null)}
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      )}
+
+                      <label className="file-upload-label">
+                        <FaCamera />
+                        {image ? "Change Image" : "Upload Image"}
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImagePick}
+                          className="file-input"
+                        />
+                      </label>
+                    </div>
+                  </>
+                )}
+
+                {(status === "undelivered" || status === "rto") && (
+                  <div className="form-group">
+                    <label className="form-label">
+                      <FaEdit className="label-icon" />
+                      Reason
+                    </label>
+                    <textarea
+                      placeholder="Enter reason for non-delivery..."
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      className="form-textarea"
+                      rows="3"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="popup-footer">
+                <button
+                  className="btn-cancel"
+                  onClick={() => setShowPopup(false)}
+                  disabled={submitting}
+                >
+                  <FaTimes />
+                  Cancel
+                </button>
+                <button
+                  className="btn-submit"
+                  onClick={handleSubmitUpdate}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <Spinner size="small" color="white" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <FaCheck />
+                      Update Status
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Toast */}
+        {toast && (
+          <Toast
+            message={statusMsg}
+            type={statusMsg === "Success" ? "success" : "error"}
+            onclose={() => setToast(false)}
+          />
+        )}
+      </div>
     </div>
   );
 };

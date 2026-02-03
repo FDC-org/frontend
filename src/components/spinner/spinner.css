@@ -1,5 +1,5 @@
-/* Spinner container */
-.spinner-wrapper {
+/* Container for centering the spinner */
+.spinner_container {
     width          : 100%;
     display        : flex;
     align-items    : center;
@@ -7,92 +7,102 @@
     padding        : 12px 0;
 }
 
-/* Spinner element */
+/* Base spinner styles */
 .spinner {
     position: relative;
     display : inline-block;
 }
 
-.spinner__ring {
+.spinner__circle {
     border-radius: 50%;
     border-style : solid;
-    animation    : rotate 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation : spin 0.8s linear infinite;
     }
 
-/* Rotation animation */
-@keyframes rotate {
-    from {
+/* Animation */
+@keyframes spin {
+    0% {
         transform: rotate(0deg);
     }
-to {
+100% {
         transform: rotate(360deg);
     }
 }
 
-/* Size modifiers */
-.spinner--sm .spinner__ring {
+/* Size variants */
+.spinner--small .spinner__circle {
     width       : 16px;
     height      : 16px;
     border-width: 2px;
 }
 
-.spinner--md .spinner__ring {
+.spinner--medium .spinner__circle {
     width       : 24px;
     height      : 24px;
     border-width: 3px;
 }
 
-.spinner--lg .spinner__ring {
+.spinner--large .spinner__circle {
     width       : 40px;
     height      : 40px;
     border-width: 4px;
 }
 
-.spinner--xl .spinner__ring {
+.spinner--xlarge .spinner__circle {
     width       : 56px;
     height      : 56px;
     border-width: 5px;
 }
 
-/* Color modifiers */
-.spinner--primary .spinner__ring {
-    border-color     : rgba(102, 126, 234, 0.2);
-    border-top-color : #3ba523;
-    border-left-color: #3ba523;
+/* Color variants - Primary (gradient green) */
+.spinner--primary .spinner__circle {
+    border-color    : rgba(46, 125, 50, 0.2);
+    border-top-color: #2e7d32;
+    border-left-color: #2e7d32;
 }
 
-.spinner--light .spinner__ring {
+/* White variant (for dark backgrounds) */
+.spinner--white .spinner__circle {
     border-color     : rgba(255, 255, 255, 0.2);
     border-top-color : #ffffff;
     border-left-color: #ffffff;
 }
 
-.spinner--dark .spinner__ring {
+/* Dark variant */
+.spinner--dark .spinner__circle {
     border-color     : rgba(45, 55, 72, 0.2);
     border-top-color : #2d3748;
     border-left-color: #2d3748;
 }
 
-.spinner--success .spinner__ring {
+/* Success variant (green) */
+.spinner--success .spinner__circle {
     border-color     : rgba(72, 187, 120, 0.2);
     border-top-color : #48bb78;
     border-left-color: #48bb78;
 }
 
-.spinner--danger .spinner__ring {
+/* Error variant (red) */
+.spinner--error .spinner__circle {
     border-color     : rgba(245, 101, 101, 0.2);
     border-top-color : #f56565;
     border-left-color: #f56565;
 }
 
-.spinner--warning .spinner__ring {
+/* Warning variant (orange) */
+.spinner--warning .spinner__circle {
     border-color     : rgba(237, 137, 54, 0.2);
     border-top-color : #ed8936;
     border-left-color: #ed8936;
 }
 
-/* Pulse effect modifier */
-@keyframes fade {
+/* Smooth animation enhancement */
+.spinner__circle {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Optional: Add a subtle pulsing effect */
+@keyframes pulse {
 
     0%,
     100% {
@@ -104,33 +114,32 @@ to {
     }
 }
 
-.spinner--pulse .spinner__ring {
-    animation: rotate 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite,
-        fade 1.5s ease-in-out infinite;
+.spinner--pulse .spinner__circle {
+    animation: spin 0.8s linear infinite, pulse 1.5s ease-in-out infinite;
 }
 
-/* Mobile responsive */
+/* Responsive adjustments */
 @media (max-width: 640px) {
-    .spinner-wrapper {
+    .spinner_container {
         padding: 10px 0;
     }
 
-    .spinner--md .spinner__ring {
+    .spinner--medium .spinner__circle {
         width       : 20px;
         height      : 20px;
         border-width: 2.5px;
     }
 
-    .spinner--lg .spinner__ring {
+    .spinner--large .spinner__circle {
         width       : 32px;
         height      : 32px;
         border-width: 3.5px;
     }
 }
 
-/* Reduced motion support */
+/* Accessibility: Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-    .spinner__ring {
+    .spinner__circle {
         animation-duration: 1.5s;
     }
 }
