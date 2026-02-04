@@ -28,8 +28,9 @@ const Track = () => {
   const [error, setError] = useState("");
   const [showImage, setShowImage] = useState(null);
 
+
   useEffect(() => {
-    if (awbno && /^\d{10}$/.test(awbno)) {
+    if (awbno && awbno.trim()) {
       setAwb(awbno);
       loadTracking(awbno);
     }
@@ -65,13 +66,15 @@ const Track = () => {
   };
 
   const handleTrack = () => {
-    if (awb.length !== 10 || !/^\d+$/.test(awb)) {
-      setError("AWB must be 10 digits");
+    const trimmedAwb = awb.trim();
+
+    if (!trimmedAwb) {
+      setError("Please enter AWB number or Reference number");
       return;
     }
 
-    navigate(`/track/${awb}`);
-    loadTracking(awb);
+    navigate(`/track/${trimmedAwb}`);
+    loadTracking(trimmedAwb);
   };
 
   const handleKeyPress = (e) => {
@@ -81,8 +84,10 @@ const Track = () => {
   };
 
   const booking = data?.booking;
-  const tracking = data?.tracking_data || [];
+  const tracking = data?.tracking_data ? [...data.tracking_data].reverse() : [];
   const delivery = data?.delivery_data || [];
+  const awbNumber = data?.awbno || awb;
+  const awbRef = data?.reference_no || "";
 
   return (
     <div className="track-container">
@@ -94,7 +99,7 @@ const Track = () => {
             Track Your Shipment
           </h1>
           <p className="hero-subtitle">
-            Enter your 10-digit AWB number to get real-time updates
+            Enter your AWB number or Reference number to get real-time updates
           </p>
 
           <div className="search-wrapper">
@@ -102,10 +107,10 @@ const Track = () => {
               <Search className="search-icon" />
               <input
                 type="text"
-                maxLength={10}
-                placeholder="Enter AWB Number (10 digits)"
+                maxLength={50}
+                placeholder="Enter AWB Number or Reference Number"
                 value={awb}
-                onChange={(e) => setAwb(e.target.value.replace(/\D/g, ""))}
+                onChange={(e) => setAwb(e.target.value.trim())}
                 onKeyPress={handleKeyPress}
                 className="search-input"
               />
@@ -121,7 +126,7 @@ const Track = () => {
             </div>
             <button
               onClick={handleTrack}
-              disabled={loading || awb.length !== 10}
+              disabled={loading || !awb.trim()}
               className="track-btn"
             >
               {loading ? (
@@ -159,139 +164,232 @@ const Track = () => {
             <div className="awb-header">
               <div className="awb-badge">
                 <Package size={20} />
-                <span>AWB: {awb}</span>
+                <span>AWB: {awbNumber}</span>
               </div>
+              {awbRef && (
+                <div className="reference-badge">
+                  <span>#Reference Number: {awbRef}</span>
+                </div>
+              )}
               {delivery.length > 0 && (
                 <StatusBadge status={delivery[0].status} />
               )}
             </div>
 
-            {/* Booking Details Card */}
-            {booking !== "none" && (
-              <div className="info-card">
-                <div className="card-header">
-                  <h3>Shipment Details</h3>
-                </div>
-                <div className="card-body">
-                  <div className="info-grid">
-                    <InfoItem
-                      icon={<MapPin size={18} />}
-                      label="Origin"
-                      value={booking.booked_hub}
-                    />
-                    <InfoItem
-                      icon={<Navigation size={18} />}
-                      label="Destination"
-                      value={booking.destination}
-                    />
-                    <InfoItem
-                      icon={<Calendar size={18} />}
-                      label="Booking Date"
-                      value={
-                        booking.date
-                          ? format(new Date(booking.date), "dd MMM yyyy")
-                          : "-"
-                      }
-                    />
-                    <InfoItem
-                      icon={<Package size={18} />}
-                      label="Pieces"
-                      value={booking.pcs}
-                    />
-                    <InfoItem
-                      icon={<Weight size={18} />}
-                      label="Weight"
-                      value={`${booking.wt} kg`}
-                    />
-                    <InfoItem
-                      icon={<User size={18} />}
-                      label="Receiver"
-                      value={booking.recname}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tracking Timeline */}
-            <div className="info-card">
-              <div className="card-header">
-                <h3>Tracking Timeline</h3>
-                <span className="event-count">{tracking.length} events</span>
-              </div>
-              <div className="card-body">
-                {tracking.length === 0 ? (
-                  <div className="empty-state">
-                    <Clock size={48} />
-                    <p>No tracking updates available yet</p>
-                  </div>
-                ) : (
-                  <div className="timeline">
-                    {tracking.map((event, index) => (
-                      <div
-                        className={`timeline-item ${
-                          index === 0 ? "active" : ""
-                        }`}
-                        key={index}
-                      >
-                        <div className="timeline-marker">
-                          <div className="timeline-dot" />
-                          {index !== tracking.length - 1 && (
-                            <div className="timeline-line" />
-                          )}
-                        </div>
-                        <div className="timeline-content">
-                          <h4 className="event-title">{event.event}</h4>
-                          <div className="event-details">
-                            <span className="event-location">
-                              <MapPin size={14} />
-                              {event.location}
-                            </span>
-                            {event.tohub && (
-                              <span className="event-destination">
-                                <Navigation size={14} />
-                                To: {event.tohub}
-                              </span>
-                            )}
-                          </div>
-                          <span className="event-time">
-                            <Clock size={14} />
-                            {format(
-                              new Date(event.date),
-                              "dd MMM yyyy, hh:mm a",
-                            )}
-                          </span>
-                        </div>
+            {/* Two Column Layout */}
+            <div className="two-column-layout">
+              {/* Left Column - Booking Details & Delivery Status */}
+              <div className="data-column">
+                {/* Booking Details Card */}
+                {booking !== "none" && (
+                  <div className="info-card">
+                    <div className="card-header">
+                      <h3>Shipment Details</h3>
+                    </div>
+                    <div className="card-body">
+                      <div className="info-grid">
+                        <InfoItem
+                          icon={<MapPin size={18} />}
+                          label="Origin"
+                          value={booking.booked_hub}
+                        />
+                        <InfoItem
+                          icon={<Navigation size={18} />}
+                          label="Destination"
+                          value={booking.destination}
+                        />
+                        <InfoItem
+                          icon={<Calendar size={18} />}
+                          label="Booking Date"
+                          value={
+                            booking.date
+                              ? format(new Date(booking.date), "dd MMM yyyy")
+                              : "-"
+                          }
+                        />
+                        {booking.reference && (
+                          <InfoItem
+                            icon={<Package size={18} />}
+                            label="Reference"
+                            value={booking.reference}
+                          />
+                        )}
+                        <InfoItem
+                          icon={<Package size={18} />}
+                          label="Pieces"
+                          value={booking.pcs}
+                        />
+                        <InfoItem
+                          icon={<Weight size={18} />}
+                          label="Weight"
+                          value={`${booking.wt} kg`}
+                        />
+                        <InfoItem
+                          icon={<User size={18} />}
+                          label="Receiver"
+                          value={booking.recname}
+                        />
                       </div>
-                    ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Delivery Status */}
+                {delivery.length > 0 && (
+                  <div className="info-card delivery-card">
+                    <div className="card-header">
+                      <h3>Delivery Status</h3>
+                    </div>
+                    <div className="card-body">
+                      {delivery.map((d, index) => (
+                        <DeliveryStatus
+                          key={index}
+                          delivery={d}
+                          onImageClick={setShowImage}
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Delivery Status */}
-            {delivery.length > 0 && (
-              <div className="info-card delivery-card">
-                <div className="card-header">
-                  <h3>Delivery Status</h3>
-                </div>
-                <div className="card-body">
-                  {delivery.map((d, index) => (
-                    <DeliveryStatus
-                      key={index}
-                      delivery={d}
-                      onImageClick={setShowImage}
-                    />
-                  ))}
+              {/* Right Column - Tracking Timeline */}
+              <div className="events-column">
+                <div className="info-card">
+                  <div className="card-header">
+                    <h3>Tracking Timeline</h3>
+                    <span className="event-count">
+                      {tracking.length} events
+                    </span>
+                  </div>
+                  <div className="card-body">
+                    {tracking.length === 0 ? (
+                      <div className="empty-state">
+                        <Clock size={48} />
+                        <p>No tracking updates available yet</p>
+                      </div>
+                    ) : (
+                      <div className="timeline">
+                        {tracking.map((event, index) => {
+                          // Detect event status based on event text
+                          const eventLower = event.event.toLowerCase();
+                          let eventStatus = null;
+
+                          if (
+                            eventLower.includes("delivered") &&
+                            !eventLower.includes("undelivered")
+                          ) {
+                            eventStatus = "delivered";
+                          } else if (
+                            eventLower.includes("out for delivery") ||
+                            eventLower.includes("ofd")
+                          ) {
+                            eventStatus = "ofd";
+                          } else if (eventLower.includes("undelivered")) {
+                            eventStatus = "undelivered";
+                          } else if (
+                            eventLower.includes("rto") ||
+                            eventLower.includes("return to origin")
+                          ) {
+                            eventStatus = "rto";
+                          }
+
+                          return (
+                            <div
+                              className={`timeline-item ${
+                                index === 0 ? "active" : ""
+                              } ${eventStatus ? `status-${eventStatus}` : ""}`}
+                              key={index}
+                            >
+                              <div className="timeline-marker">
+                                <div className="timeline-dot">
+                                  {eventStatus === "delivered" && (
+                                    <CheckCircle size={12} />
+                                  )}
+                                  {eventStatus === "ofd" && <Truck size={12} />}
+                                  {eventStatus === "undelivered" && (
+                                    <XCircle size={12} />
+                                  )}
+                                  {eventStatus === "rto" && (
+                                    <XCircle size={12} />
+                                  )}
+                                </div>
+                                {index !== tracking.length - 1 && (
+                                  <div className="timeline-line" />
+                                )}
+                              </div>
+                              <div className="timeline-content">
+                                <div className="event-title-row">
+                                  <h4 className="event-title">{event.event}</h4>
+                                  {eventStatus && (
+                                    <span
+                                      className={`event-status-badge ${eventStatus}`}
+                                    >
+                                      {eventStatus === "delivered" && (
+                                        <>
+                                          <CheckCircle size={14} />
+                                          Delivered
+                                        </>
+                                      )}
+                                      {eventStatus === "ofd" && (
+                                        <>
+                                          <Truck size={14} />
+                                          Out for Delivery
+                                        </>
+                                      )}
+                                      {eventStatus === "undelivered" && (
+                                        <>
+                                          <XCircle size={14} />
+                                          Undelivered
+                                        </>
+                                      )}
+                                      {eventStatus === "rto" && (
+                                        <>
+                                          <XCircle size={14} />
+                                          RTO
+                                        </>
+                                      )}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="event-details">
+                                  <span className="event-location">
+                                    <MapPin size={14} />
+                                    {event.location}
+                                  </span>
+                                  {event.tohub && (
+                                    <span className="event-destination">
+                                      <Navigation size={14} />
+                                      To: {event.tohub}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="event-time">
+                                  <Clock size={14} />
+                                  {format(
+                                    new Date(event.date),
+                                    "dd MMM yyyy, hh:mm a",
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         ) : (
           <div className="empty-state">
             <Package size={64} />
             <h3>Start Tracking</h3>
-            <p>Enter your AWB number above to track your shipment</p>
+            <p>
+              Enter your AWB number or Reference number above to track your
+              shipment
+            </p>
           </div>
         )}
       </div>

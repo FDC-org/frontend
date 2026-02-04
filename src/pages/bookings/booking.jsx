@@ -33,6 +33,7 @@ const Booking = () => {
     mode: "",
     contents: "",
     pincode: "",
+    reference: "",
   });
 
   const [destinations, setDestinations] = useState([]);
@@ -140,20 +141,10 @@ const Booking = () => {
       return false;
     }
 
-    // if (formData.senderphone.length !== 10) {
-    //   showToast("Sender phone must be 10 digits", "error");
-    //   return false;
-    // }
-
     if (!formData.receivername.trim()) {
       showToast("Receiver name is required", "error");
       return false;
     }
-
-    // if (formData.receiverphone.length !== 10) {
-    //   showToast("Receiver phone must be 10 digits", "error");
-    //   return false;
-    // }
 
     if (!formData.doc_type) {
       showToast("Please select document type", "error");
@@ -196,7 +187,7 @@ const Booking = () => {
             ...formData,
             displayDate: new Date().toLocaleDateString("en-IN"),
           },
-          ...prev.slice(0, 9), // Keep only last 10 bookings
+          ...prev.slice(0, 9),
         ]);
 
         showToast("Booking created successfully!", "success");
@@ -207,6 +198,7 @@ const Booking = () => {
           awbno: "",
           pcs: formData.doc_type === "docx" ? "1" : "",
           wt: formData.doc_type === "docx" ? "0.250" : "",
+          reference: "",
         }));
 
         // Focus on AWB input
@@ -259,7 +251,7 @@ const Booking = () => {
               <MdDescription />
               Document Details
             </h2>
-            <div className="booking__grid booking__grid--3">
+            <div className="booking__grid booking__grid--4">
               <div className="form-field">
                 <label htmlFor="awbno" className="form-field__label">
                   AWB Number <span className="required">*</span>
@@ -317,132 +309,27 @@ const Booking = () => {
                   ))}
                 </select>
               </div>
-            </div>
-          </section>
 
-          {/* Sender Details */}
-          <section className="booking__section">
-            <h2 className="booking__section-title">
-              <MdPerson />
-              Sender Details
-            </h2>
-            <div className="booking__grid booking__grid--3">
               <div className="form-field">
-                <label htmlFor="sendername" className="form-field__label">
-                  Name <span className="required">*</span>
+                <label htmlFor="reference" className="form-field__label">
+                  Reference Number
                 </label>
                 <input
-                  id="sendername"
-                  name="sendername"
+                  id="reference"
+                  name="reference"
                   type="text"
                   className="form-field__input"
-                  placeholder="Sender name"
-                  value={formData.sendername}
+                  placeholder="Reference number (optional)"
+                  value={formData.reference}
                   onChange={handleChange}
                   ref={(el) => (inputRefs.current[3] = el)}
                   onKeyDown={(e) => handleKeyDown(e, 3)}
                 />
               </div>
-
-              <div className="form-field">
-                <label htmlFor="senderphone" className="form-field__label">
-                  Phone <span className="required"></span>
-                </label>
-                <input
-                  id="senderphone"
-                  name="senderphone"
-                  type="tel"
-                  className="form-field__input"
-                  placeholder="10-digit phone"
-                  value={formData.senderphone}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[4] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 4)}
-                  maxLength={10}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="senderaddress" className="form-field__label">
-                  Address
-                </label>
-                <input
-                  id="senderaddress"
-                  name="senderaddress"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Sender address"
-                  value={formData.senderaddress}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[5] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 5)}
-                />
-              </div>
             </div>
           </section>
 
-          {/* Receiver Details */}
-          <section className="booking__section">
-            <h2 className="booking__section-title">
-              <MdLocationOn />
-              Receiver Details
-            </h2>
-            <div className="booking__grid booking__grid--3">
-              <div className="form-field">
-                <label htmlFor="receivername" className="form-field__label">
-                  Name <span className="required">*</span>
-                </label>
-                <input
-                  id="receivername"
-                  name="receivername"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Receiver name"
-                  value={formData.receivername}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[6] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 6)}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="receiverphone" className="form-field__label">
-                  Phone <span className="required"></span>
-                </label>
-                <input
-                  id="receiverphone"
-                  name="receiverphone"
-                  type="tel"
-                  className="form-field__input"
-                  placeholder="10-digit phone"
-                  value={formData.receiverphone}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[7] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 7)}
-                  maxLength={10}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="receiveraddress" className="form-field__label">
-                  Address
-                </label>
-                <input
-                  id="receiveraddress"
-                  name="receiveraddress"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Receiver address"
-                  value={formData.receiveraddress}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[8] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 8)}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Service Details */}
+          {/* Service Details - MOVED TO 2ND POSITION */}
           <section className="booking__section">
             <h2 className="booking__section-title">
               <MdLocalShipping />
@@ -459,8 +346,8 @@ const Booking = () => {
                   className="form-field__select"
                   value={formData.doc_type}
                   onChange={handleChange}
-                  ref={(el) => (inputRefs.current[9] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 9)}
+                  ref={(el) => (inputRefs.current[4] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 4)}
                 >
                   <option value="">Select type</option>
                   <option value="docx">DOX</option>
@@ -481,8 +368,8 @@ const Booking = () => {
                   placeholder="0.000"
                   value={formData.wt}
                   onChange={handleChange}
-                  ref={(el) => (inputRefs.current[10] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 10)}
+                  ref={(el) => (inputRefs.current[5] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 5)}
                 />
               </div>
 
@@ -498,8 +385,8 @@ const Booking = () => {
                   placeholder="0"
                   value={formData.pcs}
                   onChange={handleChange}
-                  ref={(el) => (inputRefs.current[11] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 11)}
+                  ref={(el) => (inputRefs.current[6] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 6)}
                 />
               </div>
 
@@ -513,8 +400,8 @@ const Booking = () => {
                   className="form-field__select"
                   value={formData.mode}
                   onChange={handleChange}
-                  ref={(el) => (inputRefs.current[12] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 12)}
+                  ref={(el) => (inputRefs.current[7] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 7)}
                 >
                   <option value="">Select mode</option>
                   <option value="SURFACE">SURFACE</option>
@@ -541,6 +428,128 @@ const Booking = () => {
             </div>
           </section>
 
+          {/* Sender Details */}
+          <section className="booking__section">
+            <h2 className="booking__section-title">
+              <MdPerson />
+              Sender Details
+            </h2>
+            <div className="booking__grid booking__grid--3">
+              <div className="form-field">
+                <label htmlFor="sendername" className="form-field__label">
+                  Name <span className="required">*</span>
+                </label>
+                <input
+                  id="sendername"
+                  name="sendername"
+                  type="text"
+                  className="form-field__input"
+                  placeholder="Sender name"
+                  value={formData.sendername}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[8] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 8)}
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="senderphone" className="form-field__label">
+                  Phone
+                </label>
+                <input
+                  id="senderphone"
+                  name="senderphone"
+                  type="tel"
+                  className="form-field__input"
+                  placeholder="10-digit phone"
+                  value={formData.senderphone}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[9] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 9)}
+                  maxLength={10}
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="senderaddress" className="form-field__label">
+                  Address
+                </label>
+                <input
+                  id="senderaddress"
+                  name="senderaddress"
+                  type="text"
+                  className="form-field__input"
+                  placeholder="Sender address"
+                  value={formData.senderaddress}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[10] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 10)}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Receiver Details */}
+          <section className="booking__section">
+            <h2 className="booking__section-title">
+              <MdLocationOn />
+              Receiver Details
+            </h2>
+            <div className="booking__grid booking__grid--3">
+              <div className="form-field">
+                <label htmlFor="receivername" className="form-field__label">
+                  Name <span className="required">*</span>
+                </label>
+                <input
+                  id="receivername"
+                  name="receivername"
+                  type="text"
+                  className="form-field__input"
+                  placeholder="Receiver name"
+                  value={formData.receivername}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[11] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 11)}
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="receiverphone" className="form-field__label">
+                  Phone
+                </label>
+                <input
+                  id="receiverphone"
+                  name="receiverphone"
+                  type="tel"
+                  className="form-field__input"
+                  placeholder="10-digit phone"
+                  value={formData.receiverphone}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[12] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 12)}
+                  maxLength={10}
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="receiveraddress" className="form-field__label">
+                  Address
+                </label>
+                <input
+                  id="receiveraddress"
+                  name="receiveraddress"
+                  type="text"
+                  className="form-field__input"
+                  placeholder="Receiver address"
+                  value={formData.receiveraddress}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[13] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 13)}
+                />
+              </div>
+            </div>
+          </section>
+
           {/* Submit Button */}
           <div className="booking__actions">
             <button
@@ -551,7 +560,7 @@ const Booking = () => {
             >
               {submitLoading ? (
                 <>
-                  <Spinner size="sm" color="light" />
+                  <Spinner size="sm" color="white" />
                   <span>Creating Booking...</span>
                 </>
               ) : (
@@ -580,6 +589,8 @@ const Booking = () => {
                     <th>Date</th>
                     <th>Sender</th>
                     <th>Receiver</th>
+                    <th>Destination</th>
+                    <th>Reference</th>
                     <th>Type</th>
                     <th>Weight</th>
                     <th>Pieces</th>
@@ -594,6 +605,12 @@ const Booking = () => {
                       <td>{booking.displayDate}</td>
                       <td>{booking.sendername}</td>
                       <td>{booking.receivername}</td>
+                      <td>
+                        {destinations.find(
+                          (d) => d.code === booking.destination_code,
+                        )?.name || booking.destination_code}
+                      </td>
+                      <td>{booking.reference || "-"}</td>
                       <td>
                         <span
                           className={`booking__badge booking__badge--${booking.doc_type}`}
