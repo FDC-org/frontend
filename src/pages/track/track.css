@@ -1,14 +1,14 @@
 /* ===========================
    Modern Track Component Styles
    Two-Column Layout: Data Left,
-   Events Right
+   Events Right Green Theme
    =========================== */
 
 :root {
-    --primary      : #6366f1;
-    --primary-dark : #4f46e5;
-    --primary-light: #818cf8;
-    --success      : #10b981;
+    --primary      : #2e7d32;
+    --primary-dark : #1b5e20;
+    --primary-light: #4caf50;
+    --success      : #2e7d32;
     --success-light: #d1fae5;
     --error        : #ef4444;
     --error-light  : #fee2e2;
@@ -48,7 +48,7 @@
 
 .track-container {
     min-height    : 100vh;
-    background    : linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
     padding-bottom: 4rem;
 }
 
@@ -57,7 +57,7 @@
    =========================== */
 
 .track-hero {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(46, 125, 50, 0.95) 0%, rgba(27, 94, 32, 0.95) 100%);
     padding   : 3rem 1rem 4rem;
     color     : var(--white);
     position  : relative;
@@ -332,7 +332,7 @@
 
 .two-column-layout {
     display              : grid;
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: 400px 1fr;
     gap                  : 1.5rem;
     align-items          : start;
 }
@@ -352,6 +352,7 @@
     flex-direction: column;
     gap           : 1.5rem;
 }
+
 /* ===========================
    Info Cards
    =========================== */
@@ -379,15 +380,15 @@
 }
 
 .card-header h3 {
-    color: var(--gray-900);
+    color : var(--gray-900);
     font-size  : 1.125rem;
     font-weight: 600;
-    }
+}
 
 .event-count {
-    background: var(--primary);
-    color     : var(--white);
-    padding   : 0.25rem 0.75rem;
+    background : var(--primary);
+    color      : var(--white);
+    padding    : 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size   : 0.75rem;
     font-weight : 600;
@@ -405,7 +406,7 @@
     display       : flex;
     flex-direction: column;
     gap           : 1.25rem;
-    }
+}
 
 .info-item {
     display    : flex;
@@ -414,17 +415,18 @@
 }
 
 .info-icon {
-    background: var(--primary-light);
-    color     : var(--white);
+    background : var(--primary-light);
+    color      : var(--white);
     padding      : 0.625rem;
     border-radius: var(--radius);
     flex-shrink  : 0;
-    }
+}
 
 .info-icon svg {
     width : 1.25rem;
     height: 1.25rem;
 }
+
 .info-content {
     display       : flex;
     flex-direction: column;
@@ -433,15 +435,15 @@
 }
 
 .info-label {
-    color: var(--gray-500);
+    color : var(--gray-500);
     font-size     : 0.75rem;
     font-weight   : 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    }
+}
 
 .info-value {
-    color: var(--gray-900);
+    color : var(--gray-900);
     font-size : 0.95rem;
     font-weight: 600;
     line-height: 1.4;
@@ -465,7 +467,7 @@
 
 .timeline-item.active .timeline-dot {
     background: var(--primary);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.2);
     animation : pulse 2s infinite;
 }
 
@@ -473,13 +475,13 @@
 
     0%,
     100% {
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.2);
     }
 
     50% {
-        box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 0 0 8px rgba(46, 125, 50, 0.1);
     }
-    }
+}
 
 .timeline-item:last-child {
     padding-bottom: 0;
@@ -488,6 +490,7 @@
 .timeline-item:last-child .timeline-line {
     display: none;
 }
+
 .timeline-marker {
     display       : flex;
     flex-direction: column;
@@ -496,13 +499,34 @@
 }
 
 .timeline-dot {
-    width  : 1rem;
-    height : 1rem;
-    background : var(--gray-300);
-    border-radius: 50%;
-    border     : 3px solid var(--white);
-    box-shadow : 0 0 0 2px var(--gray-300);
-    transition : all 0.3s;
+    width          : 1rem;
+    height         : 1rem;
+    background     : var(--gray-300);
+    border-radius  : 50%;
+    border         : 3px solid var(--white);
+    box-shadow     : 0 0 0 2px var(--gray-300);
+    transition     : all 0.3s;
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+    color          : var(--white);
+    }
+
+    /* Status-specific timeline dots */
+    .timeline-item.status-delivered .timeline-dot {
+        background: var(--success);
+        box-shadow: 0 0 0 2px var(--success);
+    }
+
+    .timeline-item.status-ofd .timeline-dot {
+        background: var(--warning);
+        box-shadow: 0 0 0 2px var(--warning);
+    }
+
+    .timeline-item.status-undelivered .timeline-dot,
+    .timeline-item.status-rto .timeline-dot {
+        background: var(--error);
+        box-shadow: 0 0 0 2px var(--error);
     }
 
 .timeline-line {
@@ -522,7 +546,7 @@
 }
 
 .timeline-item.active .timeline-content {
-    background  : linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    background : linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
     border-color: var(--primary-light);
 }
 
@@ -532,10 +556,49 @@
 }
 
 .event-title {
-    color        : var(--gray-900);
-    font-size    : 1rem;
-    font-weight  : 600;
-    margin-bottom: 0.75rem;
+    color      : var(--gray-900);
+    font-size  : 1rem;
+    font-weight: 600;
+    margin     : 0;
+    }
+
+    .event-title-row {
+        display        : flex;
+        justify-content: space-between;
+        align-items    : flex-start;
+        gap            : 0.75rem;
+        margin-bottom  : 0.75rem;
+        flex-wrap      : wrap;
+    }
+
+    .event-status-badge {
+        display       : inline-flex;
+        align-items   : center;
+        gap           : 0.375rem;
+        padding       : 0.375rem 0.75rem;
+        border-radius : 9999px;
+        font-size     : 0.75rem;
+        font-weight   : 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        white-space   : nowrap;
+        flex-shrink   : 0;
+    }
+
+    .event-status-badge.delivered {
+        background: var(--success-light);
+        color     : var(--success);
+    }
+
+    .event-status-badge.ofd {
+        background: var(--warning-light);
+        color     : #92400e;
+    }
+
+    .event-status-badge.undelivered,
+    .event-status-badge.rto {
+        background: var(--error-light);
+        color     : var(--error);
 }
 
 .event-details {
@@ -737,7 +800,7 @@
     to {
         opacity: 1;
     }
-    }
+}
 
 .modal-close {
     position      : absolute;
@@ -781,7 +844,7 @@
         transform: scale(1);
         opacity  : 1;
     }
-    }
+}
 
 /* ===========================
    Responsive Design
@@ -789,13 +852,14 @@
 
 @media (max-width: 1024px) {
     .two-column-layout {
-        grid-template-columns: 320px 1fr;
+        grid-template-columns: 340px 1fr;
     }
 
     .data-column {
         position: static;
     }
 }
+
 @media (max-width: 768px) {
     .hero-title {
         font-size: 1.5rem;
@@ -840,6 +904,7 @@
     .data-column {
         position: static;
     }
+
     .card-header {
         flex-direction: column;
         align-items   : flex-start;
@@ -858,6 +923,10 @@
         flex-direction: column;
         gap           : 0.5rem;
     }
+.event-title-row {
+    flex-direction: column;
+    align-items   : flex-start;
+}
 }
 
 @media (max-width: 480px) {
