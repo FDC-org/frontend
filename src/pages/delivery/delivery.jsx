@@ -131,6 +131,12 @@ const DeliveryDRSList = () => {
       return;
     }
 
+    if ((status === "undelivered" || status === "rto") && !reason) {
+      setStatusMsg("Select a reason");
+      setToast(true);
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -496,15 +502,70 @@ const DeliveryDRSList = () => {
                   <div className="form-group">
                     <label className="form-label">
                       <FaEdit className="label-icon" />
-                      Reason
+                      Reason *
                     </label>
-                    <textarea
-                      placeholder="Enter reason for non-delivery..."
+                    <select
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      className="form-textarea"
-                      rows="3"
-                    />
+                      className="form-select"
+                    >
+                      <option value="">Select reason...</option>
+                      <option value="PENDING COMPANY TIME OVER">
+                        PENDING COMPANY TIME OVER
+                      </option>
+                      <option value="PO NOT READY">PO NOT READY</option>
+                      <option value="SHORT ADDRESS">SHORT ADDRESS</option>
+                      <option value="WEEKLY DELIVERY">WEEKLY DELIVERY</option>
+                      <option value="WITH CUSTOMS">WITH CUSTOMS</option>
+                      <option value="WRONG SORTING">WRONG SORTING</option>
+                      <option value="WRONG SORTING / CENTER">
+                        WRONG SORTING / CENTER
+                      </option>
+                      <option value="DAMAGED & POOR PACKING">
+                        DAMAGED & POOR PACKING
+                      </option>
+                      <option value="DEPARTMENT NOT MENTIONED">
+                        DEPARTMENT NOT MENTIONED
+                      </option>
+                      <option value="DOOR CLOSED">DOOR CLOSED</option>
+                      <option value="HOLD">HOLD</option>
+                      <option value="INSUFFICIANT PAPER">
+                        INSUFFICIANT PAPER
+                      </option>
+                      <option value="OFFICE DELIVERY PENDING">
+                        OFFICE DELIVERY PENDING
+                      </option>
+                      <option value="PARTY NOT AVAILABLE">
+                        PARTY NOT AVAILABLE
+                      </option>
+                      <option value="PARTY NOT COLLECTED FROM OFFICE">
+                        PARTY NOT COLLECTED FROM OFFICE
+                      </option>
+                      <option value="COD AMOUNT NOT READY">
+                        COD AMOUNT NOT READY
+                      </option>
+                      <option value="CONSIGNEE NOT RESPONDING">
+                        CONSIGNEE NOT RESPONDING
+                      </option>
+                      <option value="COMPANY PERSONAL COURIER CALL NOT ATTENT">
+                        COMPANY PERSONAL COURIER CALL NOT ATTENT
+                      </option>
+                      <option value="CONSIGNEE OUT OF STATION">
+                        CONSIGNEE OUT OF STATION
+                      </option>
+                      <option value="CONTAINMENT (COVID-19) AREA">
+                        CONTAINMENT (COVID-19) AREA
+                      </option>
+                      <option value="CUSTOMER COLLECT FROM OFFICE">
+                        CUSTOMER COLLECT FROM OFFICE
+                      </option>
+                      <option value="CUSTOMER REJECTED - CANCELLED">
+                        CUSTOMER REJECTED - CANCELLED
+                      </option>
+                      <option value="CUSTOMER REQUESTED NEXT DAY DELIVERY">
+                        CUSTOMER REQUESTED NEXT DAY DELIVERY
+                      </option>
+                    </select>
                   </div>
                 )}
               </div>
