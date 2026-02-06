@@ -8,7 +8,10 @@ import {
   MdSearch,
   MdFileDownload,
   MdRefresh,
+  MdList,
+  MdClose,
 } from "react-icons/md";
+import { FaBoxes } from "react-icons/fa";
 import "./view_bookings.css";
 
 const ViewBookings = () => {
@@ -20,6 +23,13 @@ const ViewBookings = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState(null);
+  const [childPiecesModal, setChildPiecesModal] = useState(null);
+  const [loadingChildPieces, setLoadingChildPieces] = useState(false);
+
+  // Child Pieces Modal
+  const [showChildModal, setShowChildModal] = useState(false);
+  const [selectedChildPieces, setSelectedChildPieces] = useState([]);
+  const [selectedAwb, setSelectedAwb] = useState("");
 
   useEffect(() => {
     fetchBookings(date);
@@ -66,7 +76,10 @@ const ViewBookings = () => {
         booking.awbno?.toLowerCase().includes(searchTerm) ||
         booking.sender?.toLowerCase().includes(searchTerm) ||
         booking.receiver?.toLowerCase().includes(searchTerm) ||
-        booking.destination?.toLowerCase().includes(searchTerm),
+        booking.destination?.toLowerCase().includes(searchTerm) ||
+        booking.child_pieces?.some((child) =>
+          child.toLowerCase().includes(searchTerm),
+        ),
     );
 
     setFilteredBookings(filtered);
@@ -75,6 +88,26 @@ const ViewBookings = () => {
   const handleRefresh = () => {
     setSearchQuery("");
     fetchBookings(date);
+  };
+
+  const handleShowChildPieces = async (awbno, childPieces) => {
+    setChildPiecesModal({ awbno, childPieces });
+  };
+
+  const handleTrackChildPiece = (childNo) => {
+    setChildPiecesModal(null);
+    navigate(`/track/${childNo}`);
+  };
+
+  // const handleShowChildPieces = (booking) => {
+  //   setSelectedAwb(booking.awbno);
+  //   setSelectedChildPieces(booking.child_pieces || []);
+  //   setShowChildModal(true);
+  // };
+
+  const handleTrackChild = (childNo) => {
+    setShowChildModal(false);
+    navigate(`/track/${childNo}`);
   };
 
   const handleExport = () => {
@@ -97,6 +130,7 @@ const ViewBookings = () => {
       "Type",
       "Weight",
       "Pieces",
+      "Child Pieces",
     ];
 
     const csvContent = [
@@ -112,6 +146,7 @@ const ViewBookings = () => {
           b.doc_type,
           b.wt,
           b.pcs,
+          (b.child_pieces || []).join("; "),
         ].join(","),
       ),
     ].join("\n");
@@ -181,7 +216,7 @@ const ViewBookings = () => {
           <MdSearch className="view-bookings__search-icon" />
           <input
             type="search"
-            placeholder="Search by AWB, sender, receiver, or destination..."
+            placeholder="Search by AWB, sender, receiver, destination, or child piece..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="view-bookings__search-input"
@@ -207,12 +242,13 @@ const ViewBookings = () => {
                   <th>Type</th>
                   <th>Weight</th>
                   <th>Pieces</th>
+                  <th>Child Pieces</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredBookings.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="view-bookings__empty">
+                    <td colSpan="10" className="view-bookings__empty">
                       <div className="view-bookings__empty-state">
                         <svg
                           width="64"
@@ -239,6 +275,7 @@ const ViewBookings = () => {
                     <tr
                       key={booking.awbno || index}
                       onClick={() => handleRowClick(booking.awbno)}
+                      className="view-bookings__row"
                     >
                       <td>{index + 1}</td>
                       <td className="view-bookings__awb">{booking.awbno}</td>
@@ -254,7 +291,31 @@ const ViewBookings = () => {
                         </span>
                       </td>
                       <td>{booking.wt} kg</td>
-                      <td>{booking.pcs}</td>
+                      <td>
+                        {booking.pcs}
+                        {booking.has_children && (
+                          <span className="pieces-indicator"> (Multi)</span>
+                        )}
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        {booking.has_children ? (
+                          <button
+                            className="view-bookings__child-btn"
+                            onClick={() =>
+                              handleShowChildPieces(
+                                booking.awbno,
+                                booking.child_pieces,
+                              )
+                            }
+                            title="View child pieces"
+                          >
+                            <FaBoxes />
+                            {booking.child_pieces?.length || 0}
+                          </button>
+                        ) : (
+                          <span className="view-bookings__no-child">-</span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -263,6 +324,59 @@ const ViewBookings = () => {
           )}
         </div>
       </div>
+
+      {/* Child Pieces Modal */}
+      {childPiecesModal && (
+        <div
+          className="child-modal-overlay"
+          onClick={() => setChildPiecesModal(null)}
+        >
+          <div className="child-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="child-modal-header">
+              <div className="child-modal-title">
+                <FaBoxes />
+                <div>
+                  <h3>Child Pieces</h3>
+                  <p>Parent AWB: {childPiecesModal.awbno}</p>
+                </div>
+              </div>
+              <button
+                className="child-modal-close"
+                onClick={() => setChildPiecesModal(null)}
+              >
+                <MdClose />
+              </button>
+            </div>
+
+            <div className="child-modal-body">
+              {!childPiecesModal.childPieces ||
+              childPiecesModal.childPieces.length === 0 ? (
+                <div className="child-modal-empty">
+                  <FaBoxes />
+                  <p>No child pieces found</p>
+                </div>
+              ) : (
+                <div className="child-pieces-grid">
+                  {childPiecesModal.childPieces.map((childNo, index) => (
+                    <div key={index} className="child-piece-card">
+                      <div className="child-piece-number">
+                        <FaBoxes />
+                        <span>{childNo}</span>
+                      </div>
+                      <button
+                        className="child-piece-track-btn"
+                        onClick={() => handleTrackChildPiece(childNo)}
+                      >
+                        Track
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <Toast
