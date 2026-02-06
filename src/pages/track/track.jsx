@@ -16,6 +16,7 @@ import {
   Navigation,
   X,
 } from "lucide-react";
+import { FaBoxes } from "react-icons/fa";
 import "./track.css";
 
 const Track = () => {
@@ -27,7 +28,7 @@ const Track = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showImage, setShowImage] = useState(null);
-
+  const [showChildModal, setShowChildModal] = useState(false);
 
   useEffect(() => {
     if (awbno && awbno.trim()) {
@@ -88,6 +89,10 @@ const Track = () => {
   const delivery = data?.delivery_data || [];
   const awbNumber = data?.awbno || awb;
   const awbRef = data?.reference_no || "";
+  const childPieces = data?.child_pieces || [];
+  const hasChildren = data?.has_children || false;
+  const isChildPiece = data?.is_child_piece || false;
+  const parentAwb = data?.parent_awb || null;
 
   return (
     <div className="track-container">
@@ -164,12 +169,30 @@ const Track = () => {
             <div className="awb-header">
               <div className="awb-badge">
                 <Package size={20} />
-                <span>AWB: {awbNumber}</span>
+                <span>
+                  AWB: {isChildPiece && parentAwb ? awbno : awbNumber}
+                </span>
               </div>
               {awbRef && (
                 <div className="reference-badge">
                   <span>#Reference Number: {awbRef}</span>
                 </div>
+              )}
+              {isChildPiece && parentAwb && (
+                <div className="parent-awb-badge">
+                  <FaBoxes />
+                  <span>Child Piece of: {parentAwb}</span>
+                </div>
+              )}
+              {hasChildren && (
+                <button
+                  className="child-pieces-btn"
+                  onClick={() => setShowChildModal(true)}
+                  title="View child pieces"
+                >
+                  <FaBoxes />
+                  <span>{childPieces.length} Child Pieces</span>
+                </button>
               )}
               {delivery.length > 0 && (
                 <StatusBadge status={delivery[0].status} />
@@ -393,6 +416,61 @@ const Track = () => {
           </div>
         )}
       </div>
+
+      {/* Child Pieces Modal */}
+      {showChildModal && (
+        <div
+          className="child-modal-overlay"
+          onClick={() => setShowChildModal(false)}
+        >
+          <div className="child-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="child-modal-header">
+              <div className="child-modal-title">
+                <FaBoxes />
+                <div>
+                  <h3>Child Pieces</h3>
+                  <p>Parent AWB: {awbNumber}</p>
+                </div>
+              </div>
+              <button
+                className="child-modal-close"
+                onClick={() => setShowChildModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="child-modal-body">
+              {childPieces.length === 0 ? (
+                <div className="child-modal-empty">
+                  <FaBoxes size={48} />
+                  <p>No child pieces found</p>
+                </div>
+              ) : (
+                <div className="child-pieces-grid">
+                  {childPieces.map((child, index) => (
+                    <div key={index} className="child-piece-card">
+                      <div className="child-piece-number">
+                        <FaBoxes />
+                        <span>{child.child_no}</span>
+                      </div>
+                      <button
+                        className="child-piece-track-btn"
+                        onClick={() => {
+                          setShowChildModal(false);
+                          navigate(`/track/${child.child_no}`);
+                        }}
+                      >
+                        Track This Piece
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Image Modal */}
       {showImage && (

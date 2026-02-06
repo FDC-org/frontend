@@ -1,0 +1,299 @@
+/* ============================================
+   FOOTER - MODERN DESIGN WITH GREEN THEME
+   ============================================ */
+
+.footer {
+    background: linear-gradient(135deg, #1b5e20 0%, #134d0a 100%);
+    color: #ffffff;
+    margin-top: auto;
+}
+
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 48px 24px 32px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+}
+
+/* ============================================
+   FOOTER SECTIONS
+   ============================================ */
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.footer-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.footer-description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+}
+
+/* ============================================
+   CONTACT INFO
+   ============================================ */
+
+.footer-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.footer-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    transition: color 0.2s ease;
+}
+
+.footer-contact-item:hover {
+    color: #ffffff;
+}
+
+.footer-icon {
+    font-size: 16px;
+    color: #81c784;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   FOOTER LINKS
+   ============================================ */
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-links li {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.footer-links a {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.footer-links li:hover,
+.footer-links a:hover {
+    color: #81c784;
+    transform: translateX(4px);
+}
+
+/* ============================================
+   DEVELOPER INFO
+   ============================================ */
+
+.developer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.developer-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #81c784;
+    margin: 0;
+}
+
+.developer-role {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+.developer-social {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.social-link {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.social-link:hover {
+    background: #81c784;
+    color: #1b5e20;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(129, 199, 132, 0.3);
+}
+
+/* ============================================
+   FOOTER BOTTOM
+   ============================================ */
+
+.footer-bottom {
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px 24px;
+}
+
+.footer-bottom-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.copyright {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+.made-with {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.heart-icon {
+    color: #ef5350;
+    font-size: 14px;
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(1.1);
+    }
+    50% {
+        transform: scale(1);
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 968px) {
+    .footer-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+        padding: 40px 20px 28px;
+    }
+}
+
+@media (max-width: 640px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 32px 16px 24px;
+    }
+
+    .footer-section {
+        gap: 16px;
+    }
+
+    .footer-title {
+        font-size: 16px;
+    }
+
+    .footer-description,
+    .footer-contact-item,
+    .footer-links li {
+        font-size: 13px;
+    }
+
+    .footer-bottom-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+
+    .copyright,
+    .made-with {
+        font-size: 12px;
+    }
+
+    .developer-social {
+        justify-content: flex-start;
+    }
+
+    .social-link {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-container {
+        padding: 28px 16px 20px;
+    }
+
+    .footer-bottom {
+        padding: 16px;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .footer-links li:hover,
+    .footer-links a:hover,
+    .social-link,
+    .heart-icon {
+        animation: none;
+        transition: none;
+        transform: none;
+    }
+}
+
+/* Focus styles for accessibility */
+.footer-links a:focus,
+.social-link:focus {
+    outline: 2px solid #81c784;
+    outline-offset: 2px;
+}

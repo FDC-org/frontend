@@ -9,6 +9,7 @@ import {
   MdLocalShipping,
 } from "react-icons/md";
 import "./quickmenubar.css";
+import { FaUser } from "react-icons/fa";
 
 const QuickMenuBar = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -71,6 +72,12 @@ const QuickMenuBar = () => {
       label: "DRS",
       icon: MdLocalShipping,
       path: "/drs",
+    },
+    {
+      id: "profile",
+      label: "Profile",
+      icon: FaUser,
+      path: "/profile",
     },
   ];
 

@@ -34,6 +34,7 @@ const Booking = () => {
     contents: "",
     pincode: "",
     reference: "",
+    child_pieces_start: "",
   });
 
   const [destinations, setDestinations] = useState([]);
@@ -41,6 +42,12 @@ const Booking = () => {
   const [loadingDest, setLoadingDest] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Check if child pieces field should be shown
+  const showChildPiecesField =
+    formData.doc_type === "nondocx" &&
+    formData.pcs &&
+    parseInt(formData.pcs) > 1;
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -102,6 +109,14 @@ const Booking = () => {
       return;
     }
 
+    // Validate child pieces starting number (digits only)
+    if (name === "child_pieces_start") {
+      if (/^\d*$/.test(value)) {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      }
+      return;
+    }
+
     // Auto-fill for document type
     if (name === "doc_type") {
       if (value === "docx") {
@@ -110,6 +125,7 @@ const Booking = () => {
           doc_type: value,
           wt: "0.250",
           pcs: "1",
+          child_pieces_start: "",
         }));
       } else {
         setFormData((prev) => ({
@@ -117,8 +133,19 @@ const Booking = () => {
           doc_type: value,
           wt: "",
           pcs: "",
+          child_pieces_start: "",
         }));
       }
+      return;
+    }
+
+    // Clear child pieces start if pcs is cleared or changed
+    if (name === "pcs") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        child_pieces_start: "",
+      }));
       return;
     }
 
@@ -161,6 +188,17 @@ const Booking = () => {
       return false;
     }
 
+    // Validate child pieces starting number for non-docx
+    if (formData.doc_type === "nondocx" && parseInt(formData.pcs) > 0) {
+      if (
+        !formData.child_pieces_start ||
+        parseInt(formData.child_pieces_start) <= 0
+      ) {
+        showToast("Please enter child pieces starting number", "error");
+        return false;
+      }
+    }
+
     if (!formData.mode) {
       showToast("Please select shipment mode", "error");
       return false;
@@ -199,6 +237,7 @@ const Booking = () => {
           pcs: formData.doc_type === "docx" ? "1" : "",
           wt: formData.doc_type === "docx" ? "0.250" : "",
           reference: "",
+          child_pieces_start: "",
         }));
 
         // Focus on AWB input
@@ -356,24 +395,6 @@ const Booking = () => {
               </div>
 
               <div className="form-field">
-                <label htmlFor="wt" className="form-field__label">
-                  Weight (kg) <span className="required">*</span>
-                </label>
-                <input
-                  id="wt"
-                  name="wt"
-                  type="number"
-                  step="0.001"
-                  className="form-field__input"
-                  placeholder="0.000"
-                  value={formData.wt}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[5] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 5)}
-                />
-              </div>
-
-              <div className="form-field">
                 <label htmlFor="pcs" className="form-field__label">
                   Pieces <span className="required">*</span>
                 </label>
@@ -390,6 +411,50 @@ const Booking = () => {
                 />
               </div>
 
+              {/* Child Pieces Starting Number - Only shown for non-docx with pieces entered */}
+              {showChildPiecesField && (
+                <div className="form-field">
+                  <label
+                    htmlFor="child_pieces_start"
+                    className="form-field__label"
+                  >
+                    Child Pieces Starting Number
+                    <span className="required">*</span>
+                  </label>
+                  <input
+                    id="child_pieces_start"
+                    name="child_pieces_start"
+                    type="text"
+                    className="form-field__input"
+                    placeholder="Enter starting number"
+                    value={formData.child_pieces_start}
+                    onChange={handleChange}
+                    ref={(el) => (inputRefs.current[14] = el)}
+                    onKeyDown={(e) => handleKeyDown(e, 14)}
+                  />
+                  <small className="form-field__help">
+                    Starting number for child piece numbering
+                  </small>
+                </div>
+              )}
+
+              <div className="form-field">
+                <label htmlFor="wt" className="form-field__label">
+                  Weight (kg) <span className="required">*</span>
+                </label>
+                <input
+                  id="wt"
+                  name="wt"
+                  type="number"
+                  step="0.001"
+                  className="form-field__input"
+                  placeholder="0.000"
+                  value={formData.wt}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[5] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 5)}
+                />
+              </div>
               <div className="form-field">
                 <label htmlFor="mode" className="form-field__label">
                   Mode <span className="required">*</span>
@@ -453,6 +518,22 @@ const Booking = () => {
               </div>
 
               <div className="form-field">
+                <label htmlFor="senderaddress" className="form-field__label">
+                  Address
+                </label>
+                <input
+                  id="senderaddress"
+                  name="senderaddress"
+                  type="text"
+                  className="form-field__input"
+                  placeholder="Sender address"
+                  value={formData.senderaddress}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[10] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 10)}
+                />
+              </div>
+              <div className="form-field">
                 <label htmlFor="senderphone" className="form-field__label">
                   Phone
                 </label>
@@ -467,23 +548,6 @@ const Booking = () => {
                   ref={(el) => (inputRefs.current[9] = el)}
                   onKeyDown={(e) => handleKeyDown(e, 9)}
                   maxLength={10}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="senderaddress" className="form-field__label">
-                  Address
-                </label>
-                <input
-                  id="senderaddress"
-                  name="senderaddress"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Sender address"
-                  value={formData.senderaddress}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[10] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 10)}
                 />
               </div>
             </div>
@@ -514,6 +578,22 @@ const Booking = () => {
               </div>
 
               <div className="form-field">
+                <label htmlFor="receiveraddress" className="form-field__label">
+                  Address
+                </label>
+                <input
+                  id="receiveraddress"
+                  name="receiveraddress"
+                  type="text"
+                  className="form-field__input"
+                  placeholder="Receiver address"
+                  value={formData.receiveraddress}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[13] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 13)}
+                />
+              </div>
+              <div className="form-field">
                 <label htmlFor="receiverphone" className="form-field__label">
                   Phone
                 </label>
@@ -528,23 +608,6 @@ const Booking = () => {
                   ref={(el) => (inputRefs.current[12] = el)}
                   onKeyDown={(e) => handleKeyDown(e, 12)}
                   maxLength={10}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="receiveraddress" className="form-field__label">
-                  Address
-                </label>
-                <input
-                  id="receiveraddress"
-                  name="receiveraddress"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Receiver address"
-                  value={formData.receiveraddress}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[13] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 13)}
                 />
               </div>
             </div>
@@ -594,6 +657,9 @@ const Booking = () => {
                     <th>Type</th>
                     <th>Weight</th>
                     <th>Pieces</th>
+                    {recentBookings.some((b) => b.child_pieces_start) && (
+                      <th>Child Start #</th>
+                    )}
                     <th>Mode</th>
                   </tr>
                 </thead>
@@ -620,6 +686,9 @@ const Booking = () => {
                       </td>
                       <td>{booking.wt} kg</td>
                       <td>{booking.pcs}</td>
+                      {recentBookings.some((b) => b.child_pieces_start) && (
+                        <td>{booking.child_pieces_start || "-"}</td>
+                      )}
                       <td>
                         <span
                           className={`booking__badge booking__badge--${booking.mode?.toLowerCase()}`}

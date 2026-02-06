@@ -397,3 +397,16 @@
         transition: none;
     }
     }
+/* Help text for form fields */
+.form-field__help {
+    display   : block;
+    margin-top: 4px;
+    font-size : 0.75rem;
+    color     : #6b7280;
+    font-style: italic;
+}
+
+/* Ensure the child pieces field animates smoothly */
+.booking__grid--4>.form-field {
+    transition: all 0.3s ease;
+}
