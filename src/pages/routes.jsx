@@ -15,6 +15,7 @@ import DeliveryUpdate from "./delivery/delivery.jsx";
 import Booking from "./bookings/booking.jsx";
 import AllBookings from "./bookings/view_bookings.jsx";
 import Profile from "./profile/profile.jsx";
+// import Landing from "./lnading.jsx";
 
 const PageRoutes = () => {
   return (
@@ -41,6 +42,8 @@ const PageRoutes = () => {
 
         <Route path="admin/hubonboard" element={<HubOnboard />} />
         <Route path="admin/useronboard" element={<UserOnboard />} />
+
+        {/* <Route path="landing" element={<Landing />} /> */}
       </Routes>
     </Router>
   );

@@ -15,6 +15,7 @@ import {
   FaEnvelope,
   FaIdCard,
   FaMapPin,
+  FaTruck,
 } from "react-icons/fa";
 import "./profile.css";
 
@@ -44,6 +45,13 @@ const Profile = () => {
   const [showAreaModal, setShowAreaModal] = useState(false);
   const [areaForm, setAreaForm] = useState({
     area: "",
+  });
+
+  // Vehicles
+  const [vehicles, setVehicles] = useState([]);
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const [vehicleForm, setVehicleForm] = useState({
+    vehicle_number: "",
   });
 
   // Loading & Toast
@@ -84,6 +92,12 @@ const Profile = () => {
       const areasRes = await axiosInstance.get("addloc/");
       if (areasRes.data.status === "success") {
         setAreas(areasRes.data.data);
+      }
+
+      // Fetch vehicles
+      const vehiclesRes = await axiosInstance.get("vehicledetails/");
+      if (vehiclesRes.data.data) {
+        setVehicles(vehiclesRes.data.data);
       }
     } catch (err) {
       console.error("Failed to fetch profile data:", err);
@@ -159,11 +173,44 @@ const Profile = () => {
     }
   };
 
+  // Add Vehicle
+  const handleAddVehicle = async () => {
+    if (!vehicleForm.vehicle_number.trim()) {
+      showToast("Vehicle number is required", "error");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const res = await axiosInstance.post("vehicledetails/", vehicleForm);
+
+      if (res.data.status === "added") {
+        showToast("Vehicle added successfully", "success");
+        setShowVehicleModal(false);
+        setVehicleForm({ vehicle_number: "" });
+        fetchProfileData(); // Refresh list
+      } else {
+        showToast("Failed to add vehicle", "error");
+      }
+    } catch (err) {
+      console.error("Error adding vehicle:", err);
+      showToast("Server error occurred", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleBoyPhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 10) {
       setBoyForm((prev) => ({ ...prev, phone: value }));
     }
+  };
+
+  const handleVehicleNumberChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    setVehicleForm({ vehicle_number: value });
   };
 
   if (loading) {
@@ -316,6 +363,52 @@ const Profile = () => {
           )}
         </div>
 
+        {/* Vehicles Section */}
+        <div className="profile-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              <FaTruck className="section-icon" />
+              Vehicles ({vehicles.length})
+            </h2>
+            <button
+              className="btn-add"
+              onClick={() => setShowVehicleModal(true)}
+            >
+              <FaPlus />
+              Add Vehicle
+            </button>
+          </div>
+
+          {vehicles.length === 0 ? (
+            <div className="empty-state">
+              <FaTruck className="empty-icon" />
+              <p>No vehicles added yet</p>
+              <button
+                className="btn-add-empty"
+                onClick={() => setShowVehicleModal(true)}
+              >
+                <FaPlus />
+                Add First Vehicle
+              </button>
+            </div>
+          ) : (
+            <div className="cards-grid">
+              {vehicles.map((vehicle, index) => (
+                <div key={index} className="card-item">
+                  <div className="card-header-row">
+                    <div className="card-icon-wrapper card-icon-vehicle">
+                      <FaTruck />
+                    </div>
+                  </div>
+                  <div className="card-content">
+                    <h3 className="card-name card-name-vehicle">{vehicle}</h3>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Areas Section */}
         <div className="profile-section">
           <div className="section-header">
@@ -449,6 +542,75 @@ const Profile = () => {
                   <>
                     <FaPlus />
                     Add Boy
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Vehicle Modal */}
+      {showVehicleModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowVehicleModal(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">
+                <FaTruck />
+                Add Vehicle
+              </h3>
+              <button
+                className="modal-close"
+                onClick={() => setShowVehicleModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label className="form-label">
+                  <FaTruck className="label-icon" />
+                  Vehicle Number *
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Enter vehicle number (e.g., KA01AB1234)"
+                  value={vehicleForm.vehicle_number}
+                  onChange={handleVehicleNumberChange}
+                />
+                <small className="form-helper">
+                  Vehicle number will be automatically converted to uppercase
+                </small>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                className="btn-cancel"
+                onClick={() => setShowVehicleModal(false)}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-submit"
+                onClick={handleAddVehicle}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <Spinner size="small" color="white" />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <FaPlus />
+                    Add Vehicle
                   </>
                 )}
               </button>
