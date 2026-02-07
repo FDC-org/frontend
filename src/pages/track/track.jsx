@@ -249,8 +249,13 @@ const Track = () => {
                         />
                         <InfoItem
                           icon={<User size={18} />}
-                          label="Receiver"
+                          label="Receiver name"
                           value={booking.recname}
+                        />
+                        <InfoItem
+                          icon={<User size={18} />}
+                          label="Sender name"
+                          value={booking.sendername}
                         />
                       </div>
                     </div>
