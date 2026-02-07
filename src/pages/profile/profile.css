@@ -81,6 +81,30 @@
     color    : #718096;
     margin   : 0;
 }
+/* Add this to your existing profile.css file */
+
+/* Vehicle-specific card styling */
+.card-icon-vehicle {
+    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+}
+
+.card-name-vehicle {
+    font-size     : 1.5rem;
+    font-weight   : 700;
+    letter-spacing: 1px;
+    text-align    : center;
+    padding       : 1rem 0;
+    color         : #134d0a;
+}
+
+/* Form helper text */
+.form-helper {
+    display   : block;
+    margin-top: 0.5rem;
+    font-size : 0.8rem;
+    color     : #6b7280;
+    font-style: italic;
+}
 
 /* ============================================
    SECTIONS

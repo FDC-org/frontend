@@ -10,7 +10,9 @@ import {
   MdPhone,
   MdDescription,
   MdLocalShipping,
+  MdClose,
 } from "react-icons/md";
+import { FaBoxes } from "react-icons/fa";
 import "./booking.css";
 
 const Booking = () => {
@@ -34,7 +36,6 @@ const Booking = () => {
     contents: "",
     pincode: "",
     reference: "",
-    child_pieces_start: "",
   });
 
   const [destinations, setDestinations] = useState([]);
@@ -43,11 +44,13 @@ const Booking = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Check if child pieces field should be shown
-  const showChildPiecesField =
-    formData.doc_type === "nondocx" &&
-    formData.pcs &&
-    parseInt(formData.pcs) > 1;
+  // Child pieces modal
+  const [showChildModal, setShowChildModal] = useState(false);
+  const [childStartNumber, setChildStartNumber] = useState("");
+
+  // Child pieces popup
+  const [showChildPopup, setShowChildPopup] = useState(false);
+  const [childPiecesStart, setChildPiecesStart] = useState("");
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -109,14 +112,6 @@ const Booking = () => {
       return;
     }
 
-    // Validate child pieces starting number (digits only)
-    if (name === "child_pieces_start") {
-      if (/^\d*$/.test(value)) {
-        setFormData((prev) => ({ ...prev, [name]: value }));
-      }
-      return;
-    }
-
     // Auto-fill for document type
     if (name === "doc_type") {
       if (value === "docx") {
@@ -125,7 +120,6 @@ const Booking = () => {
           doc_type: value,
           wt: "0.250",
           pcs: "1",
-          child_pieces_start: "",
         }));
       } else {
         setFormData((prev) => ({
@@ -133,19 +127,8 @@ const Booking = () => {
           doc_type: value,
           wt: "",
           pcs: "",
-          child_pieces_start: "",
         }));
       }
-      return;
-    }
-
-    // Clear child pieces start if pcs is cleared or changed
-    if (name === "pcs") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-        child_pieces_start: "",
-      }));
       return;
     }
 
@@ -188,17 +171,6 @@ const Booking = () => {
       return false;
     }
 
-    // Validate child pieces starting number for non-docx
-    if (formData.doc_type === "nondocx" && parseInt(formData.pcs) > 0) {
-      if (
-        !formData.child_pieces_start ||
-        parseInt(formData.child_pieces_start) <= 0
-      ) {
-        showToast("Please enter child pieces starting number", "error");
-        return false;
-      }
-    }
-
     if (!formData.mode) {
       showToast("Please select shipment mode", "error");
       return false;
@@ -210,10 +182,36 @@ const Booking = () => {
   const handleSubmit = async () => {
     if (!validate()) return;
 
+    // If pieces > 1, show child pieces popup
+    if (parseInt(formData.pcs) > 1) {
+      setShowChildPopup(true);
+      setChildPiecesStart("");
+      return;
+    }
+
+    // If single piece, submit directly
+    await submitBooking();
+  };
+
+  const handleChildPopupSubmit = async () => {
+    if (!childPiecesStart || childPiecesStart.trim() === "") {
+      showToast("Please enter child pieces starting number", "error");
+      return;
+    }
+
+    await submitBooking(childPiecesStart);
+  };
+
+  const submitBooking = async (childStart = "") => {
     setSubmitLoading(true);
 
     try {
-      const response = await axiosInstance.post("booking/", formData, {
+      const bookingData = {
+        ...formData,
+        child_pieces_start: childStart,
+      };
+
+      const response = await axiosInstance.post("booking/", bookingData, {
         headers: {
           Authorization: `Token ${localStorage.getItem("token")}`,
         },
@@ -222,7 +220,7 @@ const Booking = () => {
       if (response.data.status === "success") {
         setRecentBookings((prev) => [
           {
-            ...formData,
+            ...bookingData,
             displayDate: new Date().toLocaleDateString("en-IN"),
           },
           ...prev.slice(0, 9),
@@ -230,20 +228,25 @@ const Booking = () => {
 
         showToast("Booking created successfully!", "success");
 
-        // Reset only necessary fields
+        // Close popup and reset
+        setShowChildPopup(false);
+        setChildPiecesStart("");
+
+        // Reset form fields
         setFormData((prev) => ({
           ...prev,
           awbno: "",
           pcs: formData.doc_type === "docx" ? "1" : "",
           wt: formData.doc_type === "docx" ? "0.250" : "",
           reference: "",
-          child_pieces_start: "",
         }));
 
         // Focus on AWB input
         inputRefs.current[0]?.focus();
       } else if (response.data.status === "exists") {
         showToast("AWB number already exists", "error");
+      } else if (response.data.status === "child exists") {
+        showToast("Child pieces already exist for this booking", "error");
       } else {
         showToast("Failed to create booking", "error");
       }
@@ -281,6 +284,21 @@ const Booking = () => {
             <h1 className="booking__title">Retail Booking</h1>
             <p className="booking__subtitle">Create a new shipment booking</p>
           </div>
+          <div className="form-field">
+            <label htmlFor="date" className="form-field__label">
+              Date
+            </label>
+            <input
+              id="date"
+              name="date"
+              type="date"
+              className="form-field__input"
+              value={formData.date}
+              onChange={handleChange}
+              ref={(el) => (inputRefs.current[1] = el)}
+              onKeyDown={(e) => handleKeyDown(e, 1)}
+            />
+          </div>
         </header>
 
         <form className="booking__form" onSubmit={(e) => e.preventDefault()}>
@@ -290,7 +308,7 @@ const Booking = () => {
               <MdDescription />
               Document Details
             </h2>
-            <div className="booking__grid booking__grid--4">
+            <div className="booking__grid booking__grid--3">
               <div className="form-field">
                 <label htmlFor="awbno" className="form-field__label">
                   AWB Number <span className="required">*</span>
@@ -307,23 +325,6 @@ const Booking = () => {
                   onKeyDown={(e) => handleKeyDown(e, 0)}
                   maxLength={10}
                   autoFocus
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="date" className="form-field__label">
-                  Date
-                </label>
-                <input
-                  disabled
-                  id="date"
-                  name="date"
-                  type="date"
-                  className="form-field__input"
-                  value={formData.date}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[1] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 1)}
                 />
               </div>
 
@@ -368,7 +369,7 @@ const Booking = () => {
             </div>
           </section>
 
-          {/* Service Details - MOVED TO 2ND POSITION */}
+          {/* Service Details */}
           <section className="booking__section">
             <h2 className="booking__section-title">
               <MdLocalShipping />
@@ -393,7 +394,6 @@ const Booking = () => {
                   <option value="nondocx">NON DOX</option>
                 </select>
               </div>
-
               <div className="form-field">
                 <label htmlFor="pcs" className="form-field__label">
                   Pieces <span className="required">*</span>
@@ -410,33 +410,6 @@ const Booking = () => {
                   onKeyDown={(e) => handleKeyDown(e, 6)}
                 />
               </div>
-
-              {/* Child Pieces Starting Number - Only shown for non-docx with pieces entered */}
-              {showChildPiecesField && (
-                <div className="form-field">
-                  <label
-                    htmlFor="child_pieces_start"
-                    className="form-field__label"
-                  >
-                    Child Pieces Starting Number
-                    <span className="required">*</span>
-                  </label>
-                  <input
-                    id="child_pieces_start"
-                    name="child_pieces_start"
-                    type="text"
-                    className="form-field__input"
-                    placeholder="Enter starting number"
-                    value={formData.child_pieces_start}
-                    onChange={handleChange}
-                    ref={(el) => (inputRefs.current[14] = el)}
-                    onKeyDown={(e) => handleKeyDown(e, 14)}
-                  />
-                  <small className="form-field__help">
-                    Starting number for child piece numbering
-                  </small>
-                </div>
-              )}
 
               <div className="form-field">
                 <label htmlFor="wt" className="form-field__label">
@@ -455,6 +428,7 @@ const Booking = () => {
                   onKeyDown={(e) => handleKeyDown(e, 5)}
                 />
               </div>
+
               <div className="form-field">
                 <label htmlFor="mode" className="form-field__label">
                   Mode <span className="required">*</span>
@@ -533,6 +507,7 @@ const Booking = () => {
                   onKeyDown={(e) => handleKeyDown(e, 10)}
                 />
               </div>
+
               <div className="form-field">
                 <label htmlFor="senderphone" className="form-field__label">
                   Phone
@@ -593,6 +568,7 @@ const Booking = () => {
                   onKeyDown={(e) => handleKeyDown(e, 13)}
                 />
               </div>
+
               <div className="form-field">
                 <label htmlFor="receiverphone" className="form-field__label">
                   Phone
@@ -657,9 +633,6 @@ const Booking = () => {
                     <th>Type</th>
                     <th>Weight</th>
                     <th>Pieces</th>
-                    {recentBookings.some((b) => b.child_pieces_start) && (
-                      <th>Child Start #</th>
-                    )}
                     <th>Mode</th>
                   </tr>
                 </thead>
@@ -685,10 +658,12 @@ const Booking = () => {
                         </span>
                       </td>
                       <td>{booking.wt} kg</td>
-                      <td>{booking.pcs}</td>
-                      {recentBookings.some((b) => b.child_pieces_start) && (
-                        <td>{booking.child_pieces_start || "-"}</td>
-                      )}
+                      <td>
+                        {booking.pcs}
+                        {parseInt(booking.pcs) > 1 && (
+                          <span className="pieces-multi"> (Multi)</span>
+                        )}
+                      </td>
                       <td>
                         <span
                           className={`booking__badge booking__badge--${booking.mode?.toLowerCase()}`}
@@ -704,6 +679,83 @@ const Booking = () => {
           </section>
         )}
       </div>
+
+      {/* Child Pieces Popup */}
+      {showChildPopup && (
+        <div className="popup-overlay" onClick={() => setShowChildPopup(false)}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            <div className="popup-header">
+              <h3 className="popup-title">
+                <FaBoxes />
+                Child Pieces Configuration
+              </h3>
+              <button
+                className="popup-close"
+                onClick={() => setShowChildPopup(false)}
+              >
+                <MdClose />
+              </button>
+            </div>
+
+            <div className="popup-body">
+              <div className="popup-info">
+                <p className="popup-info-text">
+                  This shipment has <strong>{formData.pcs} pieces</strong>.
+                  Please enter the starting number for child piece numbering.
+                </p>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <FaBoxes className="label-icon" />
+                  Child Pieces Starting Number *
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Enter starting number (e.g., 1)"
+                  value={childPiecesStart}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d{0,10}$/.test(value)) {
+                      setChildPiecesStart(value);
+                    }
+                  }}
+                  autoFocus
+                />
+                <small className="form-help">
+                  Child pieces will be numbered from this value onwards (e.g.,
+                  start: 1 → pieces: C001, C002, C003...)
+                </small>
+              </div>
+            </div>
+
+            <div className="popup-footer">
+              <button
+                className="btn-cancel"
+                onClick={() => setShowChildPopup(false)}
+                disabled={submitLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-submit"
+                onClick={handleChildPopupSubmit}
+                disabled={submitLoading}
+              >
+                {submitLoading ? (
+                  <>
+                    <Spinner size="small" color="white" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Confirm & Submit"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <Toast

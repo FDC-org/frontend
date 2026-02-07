@@ -29,6 +29,9 @@ const OutScan = () => {
   const [loading, setLoading] = useState(false);
   const [modalerror, setModalerror] = useState("");
   const [oldmanifestnumber, setoldmanifestnumber] = useState("");
+  const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
+  const [newVehicleNumber, setNewVehicleNumber] = useState("");
+  const [addingVehicle, setAddingVehicle] = useState(false);
 
   const navigate = useNavigate();
 
@@ -64,6 +67,25 @@ const OutScan = () => {
           label: item.name,
         }));
         setTohubdata([...details]);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+
+    // Fetch vehicle list
+    axiosInstance
+      .get("vehicledetails/", { withCredentials: true })
+      .then((r) => {
+        const vehicles = r.data.data.map((vehicle) => ({
+          value: vehicle,
+          label: vehicle,
+        }));
+        // Add "Add New Vehicle" option at the end
+        vehicles.push({
+          value: "__add_new__",
+          label: "+ Add New Vehicle",
+        });
+        setVehiclenumberdata(vehicles);
         setLoading(false);
       })
       .catch((e) => {
@@ -72,11 +94,60 @@ const OutScan = () => {
       });
   }, [navigate]);
 
-  const handlechange = (selected) => {
+  const handleVehicleChange = (selected) => {
     if (selected.value === "__add_new__") {
-      setopenmodel(true);
+      setShowAddVehicleModal(true);
     } else {
       setVehiclenumber(selected.value);
+    }
+  };
+
+  const handleAddVehicle = async () => {
+    if (!newVehicleNumber.trim()) {
+      setStatus("Vehicle number is required");
+      setToast(true);
+      return;
+    }
+
+    setAddingVehicle(true);
+
+    try {
+      const res = await axiosInstance.post("vehicledetails/", {
+        vehicle_number: newVehicleNumber.toUpperCase(),
+      });
+
+      if (res.data.status === "added") {
+        setStatus("Vehicle added successfully");
+        setToast(true);
+
+        // Refresh vehicle list
+        const vehiclesRes = await axiosInstance.get("vehicledetails/");
+        const vehicles = vehiclesRes.data.data.map((vehicle) => ({
+          value: vehicle,
+          label: vehicle,
+        }));
+        vehicles.push({
+          value: "__add_new__",
+          label: "+ Add New Vehicle",
+        });
+        setVehiclenumberdata(vehicles);
+
+        // Set the newly added vehicle as selected
+        setVehiclenumber(newVehicleNumber.toUpperCase());
+
+        // Close modal and reset form
+        setShowAddVehicleModal(false);
+        setNewVehicleNumber("");
+      } else {
+        setStatus("Failed to add vehicle");
+        setToast(true);
+      }
+    } catch (err) {
+      console.error("Error adding vehicle:", err);
+      setStatus("Server error occurred");
+      setToast(true);
+    } finally {
+      setAddingVehicle(false);
     }
   };
 
@@ -93,12 +164,19 @@ const OutScan = () => {
       return;
     }
 
+    if (vehiclenumber === "") {
+      setStatus("Select vehicle number");
+      setToast(true);
+      return;
+    }
+
     setClick(true);
     axiosInstance
       .post("outscanmobile/", {
         awbno: savefortable,
         manifest_number: manifestnumber,
         tohub: tohub,
+        vehicle_number: vehiclenumber,
         date: format(new Date(), "dd-MM-yyyy, HH:mm:ss"),
       })
       .then((r) => {
@@ -184,7 +262,7 @@ const OutScan = () => {
         <div className="outscan__main-grid">
           {/* Left Column - Input Card */}
           <div className="outscan__input-card">
-            {/* Manifest and Hub Selection */}
+            {/* Manifest, Hub, and Vehicle Selection */}
             <div className="outscan__details-section">
               <div className="outscan__form-group">
                 <label className="outscan__label">Manifest Number</label>
@@ -206,6 +284,24 @@ const OutScan = () => {
                   onChange={(e) => setTohub(e.value)}
                   placeholder="Select destination hub"
                   styles={customSelectStyles}
+                />
+              </div>
+
+              <div className="outscan__form-group">
+                <label className="outscan__label">
+                  Vehicle Number <span className="outscan__required">*</span>
+                </label>
+                <Select
+                  options={vehiclenumberdata}
+                  className="outscan__select"
+                  onChange={handleVehicleChange}
+                  placeholder="Select vehicle number"
+                  styles={customSelectStyles}
+                  value={
+                    vehiclenumber
+                      ? { value: vehiclenumber, label: vehiclenumber }
+                      : null
+                  }
                 />
               </div>
             </div>
@@ -305,6 +401,74 @@ const OutScan = () => {
           </div>
         </div>
       </div>
+
+      {/* Add Vehicle Modal */}
+      {showAddVehicleModal && (
+        <div
+          className="outscan__modal-overlay"
+          onClick={() => setShowAddVehicleModal(false)}
+        >
+          <div
+            className="outscan__modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="outscan__modal-header">
+              <h3 className="outscan__modal-title">Add New Vehicle</h3>
+              <button
+                className="outscan__modal-close"
+                onClick={() => setShowAddVehicleModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="outscan__modal-body">
+              <div className="outscan__form-group">
+                <label className="outscan__label">
+                  Vehicle Number <span className="outscan__required">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="outscan__input"
+                  placeholder="Enter vehicle number (e.g., KA01AB1234)"
+                  value={newVehicleNumber}
+                  onChange={(e) =>
+                    setNewVehicleNumber(e.target.value.toUpperCase())
+                  }
+                  autoFocus
+                />
+                <small className="outscan__form-helper">
+                  Vehicle number will be automatically converted to uppercase
+                </small>
+              </div>
+            </div>
+
+            <div className="outscan__modal-footer">
+              <button
+                className="outscan__modal-btn outscan__modal-btn--cancel"
+                onClick={() => setShowAddVehicleModal(false)}
+                disabled={addingVehicle}
+              >
+                Cancel
+              </button>
+              <button
+                className="outscan__modal-btn outscan__modal-btn--submit"
+                onClick={handleAddVehicle}
+                disabled={addingVehicle}
+              >
+                {addingVehicle ? (
+                  <>
+                    <Spinner size="sm" color="white" />
+                    <span>Adding...</span>
+                  </>
+                ) : (
+                  "Add Vehicle"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <Toast
