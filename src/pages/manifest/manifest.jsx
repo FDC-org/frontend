@@ -7,6 +7,7 @@ import axiosInstance from "../../components/axios";
 import { useNavigate } from "react-router-dom";
 import { isLoggedIn } from "../../components/auth";
 import { MdCalendarToday, MdVisibility, MdLocalShipping } from "react-icons/md";
+import { FaEye, FaDownload } from "react-icons/fa";
 
 const Manifest = () => {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -55,6 +56,26 @@ const Manifest = () => {
     const [date, timeWithMs] = datef.split("T");
     const time = timeWithMs.split(".")[0];
     return date + ", " + time;
+  };
+
+  // ---------------- PDF ACTIONS ----------------
+  const handleViewManifest = (manifestNumber) => {
+    // Use absolute backend URL for view endpoint
+    const viewUrl = `http://localhost:8000/api/manifest/view/${manifestNumber}/`;
+    window.open(viewUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDownloadManifest = (manifestNumber) => {
+    // Use absolute backend URL for download endpoint
+    const downloadUrl = `http://localhost:8000/api/manifest/download/${manifestNumber}/`;
+
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `Manifest_${manifestNumber}.pdf`;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const totalItems = data ? Object.keys(data).length : 0;
@@ -126,6 +147,7 @@ const Manifest = () => {
                       <th>Manifest Number</th>
                       <th>Destination Hub</th>
                       <th>Vehicle Number</th>
+                      <th className="th-actions">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -148,6 +170,30 @@ const Manifest = () => {
                         </td>
                         <td className="viewoutscan__vehicle">
                           {value[1].vehicle_number.toUpperCase()}
+                        </td>
+                        <td className="td-actions">
+                          <div className="table-actions">
+                            <button
+                              className="action-icon-btn view"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewManifest(value[1].manifestnumber);
+                              }}
+                              title="View PDF"
+                            >
+                              <FaEye />
+                            </button>
+                            <button
+                              className="action-icon-btn download"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownloadManifest(value[1].manifestnumber);
+                              }}
+                              title="Download PDF"
+                            >
+                              <FaDownload />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
