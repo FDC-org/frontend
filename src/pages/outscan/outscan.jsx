@@ -32,6 +32,8 @@ const OutScan = () => {
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
   const [newVehicleNumber, setNewVehicleNumber] = useState("");
   const [addingVehicle, setAddingVehicle] = useState(false);
+  const [hubLoading, setHubLoading] = useState(false);
+  const [vehicleLoading, setVehicleLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -56,9 +58,11 @@ const OutScan = () => {
         setmanifestnumber(r.data.manifestno);
         setoldmanifestnumber(r.data.manifestno);
       })
-      .catch((e) => console.log(e));
+      .catch((e) => console.log(e))
+      .finally(() => setLoading(false));
 
     // Fetch hub list
+    setHubLoading(true);
     axiosInstance
       .get("gethublist/", { withCredentials: true })
       .then((r) => {
@@ -70,9 +74,11 @@ const OutScan = () => {
       })
       .catch((e) => {
         console.log(e);
-      });
+      })
+      .finally(() => setHubLoading(false));
 
     // Fetch vehicle list
+    setVehicleLoading(true);
     axiosInstance
       .get("vehicledetails/", { withCredentials: true })
       .then((r) => {
@@ -86,12 +92,11 @@ const OutScan = () => {
           label: "+ Add New Vehicle",
         });
         setVehiclenumberdata(vehicles);
-        setLoading(false);
       })
       .catch((e) => {
         console.log(e);
-        setLoading(false);
-      });
+      })
+      .finally(() => setVehicleLoading(false));
   }, [navigate]);
 
   const handleVehicleChange = (selected) => {
@@ -284,6 +289,8 @@ const OutScan = () => {
                   onChange={(e) => setTohub(e.value)}
                   placeholder="Select destination hub"
                   styles={customSelectStyles}
+                  isLoading={hubLoading}
+                  loadingMessage={() => "Loading hubs..."}
                 />
               </div>
 
@@ -297,6 +304,8 @@ const OutScan = () => {
                   onChange={handleVehicleChange}
                   placeholder="Select vehicle number"
                   styles={customSelectStyles}
+                  isLoading={vehicleLoading}
+                  loadingMessage={() => "Loading vehicles..."}
                   value={
                     vehiclenumber
                       ? { value: vehiclenumber, label: vehiclenumber }

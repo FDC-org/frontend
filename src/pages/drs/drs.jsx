@@ -14,6 +14,9 @@ import {
   FaTimes,
   FaFileAlt,
   FaSearch,
+  FaEye,
+  FaDownload,
+  FaFilePdf,
 } from "react-icons/fa";
 import "./drs.css";
 
@@ -43,6 +46,12 @@ const CreateDRS = () => {
   const [drsList, setDrsList] = useState([]);
   const [drsLoading, setDrsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
+
+  // ---------------- SUCCESS MODAL STATES ----------------
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdDrsData, setCreatedDrsData] = useState(null);
 
   // 🔹 Auth + Load Areas & Boys
   useEffect(() => {
@@ -174,8 +183,16 @@ const CreateDRS = () => {
       }
 
       if (res.data.status === "success") {
-        setStatus("Successfully Added");
-        setToast(true);
+        // Store DRS data for modal (new API format)
+        const newDrsData = {
+          drsno: res.data.drs_number || res.data.drsno,
+          document_url: res.data.document_url,
+        };
+        setCreatedDrsData(newDrsData);
+        setShowSuccessModal(true);
+
+        // Auto-download PDF
+        handleDownloadPDF(newDrsData.document_url, newDrsData.drsno);
 
         setDocList([]);
         setSelectedArea("");
@@ -236,6 +253,55 @@ const CreateDRS = () => {
       row.location.toLowerCase().includes(searchLower)
     );
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredDrsList.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedDrsList = filteredDrsList.slice(startIndex, endIndex);
+
+  // Pagination handlers
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // ---------------- PDF ACTIONS ----------------
+  const handleViewPDF = (url, drsno) => {
+    // Use absolute backend URL for view endpoint
+    const viewUrl = url || `http://localhost:8000/api/drs/view/${drsno}/`;
+    window.open(viewUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDownloadPDF = (url, drsno) => {
+    // Use absolute backend URL for download endpoint
+    const downloadUrl = url || `http://localhost:8000/api/drs/download/${drsno}/`;
+
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `DRS_${drsno}.pdf`;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false);
+    setCreatedDrsData(null);
+  };
 
   if (loading) {
     return (
@@ -457,10 +523,11 @@ const CreateDRS = () => {
                     <th>Date</th>
                     <th>Delivery Boy</th>
                     <th>Location</th>
+                    <th className="th-actions">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredDrsList.map((row, index) => (
+                  {paginatedDrsList.map((row, index) => (
                     <tr
                       key={row.drsno}
                       className="table-row-clickable"
@@ -474,11 +541,35 @@ const CreateDRS = () => {
                         })
                       }
                     >
-                      <td className="td-narrow">{index + 1}</td>
+                      <td className="td-narrow">{startIndex + index + 1}</td>
                       <td className="td-drs-number">{row.drsno}</td>
                       <td>{format(new Date(row.date), "dd-MM-yyyy")}</td>
                       <td>{row.boy}</td>
                       <td>{row.location}</td>
+                      <td className="td-actions">
+                        <div className="table-actions">
+                          <button
+                            className="action-icon-btn view"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewPDF(row.document_url, row.drsno);
+                            }}
+                            title="View PDF"
+                          >
+                            <FaEye />
+                          </button>
+                          <button
+                            className="action-icon-btn download"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadPDF(row.document_url, row.drsno);
+                            }}
+                            title="Download PDF"
+                          >
+                            <FaDownload />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -486,17 +577,94 @@ const CreateDRS = () => {
             )}
           </div>
 
-          {/* Pagination info */}
+          {/* Pagination */}
           {filteredDrsList.length > 0 && (
             <div className="table-footer">
               <p className="table-info">
-                Showing {filteredDrsList.length}{" "}
-                {filteredDrsList.length === 1 ? "record" : "records"}
+                Showing {startIndex + 1} to {Math.min(endIndex, filteredDrsList.length)} of {filteredDrsList.length} {filteredDrsList.length === 1 ? "record" : "records"}
               </p>
+              {totalPages > 1 && (
+                <div className="pagination-controls">
+                  <button
+                    className="pagination-btn"
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="page-info">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    className="pagination-btn"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && createdDrsData && (
+        <div
+          className="success-modal-overlay"
+          onClick={closeSuccessModal}
+        >
+          <div
+            className="success-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="success-modal-header">
+              <div className="modal-header-content">
+                <FaFilePdf className="modal-icon" />
+                <div>
+                  <h3>DRS Created Successfully!</h3>
+                  <p>DRS Number: {createdDrsData.drsno}</p>
+                </div>
+              </div>
+              <button
+                className="modal-close-btn"
+                onClick={closeSuccessModal}
+                aria-label="Close modal"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="success-modal-body">
+              <p>Your Delivery Receipt Sheet has been created successfully.</p>
+              <p className="pdf-ready-text">
+                PDF document is ready for viewing or download.
+              </p>
+            </div>
+            <div className="success-modal-footer">
+              <button
+                className="pdf-action-btn view"
+                onClick={() => handleViewPDF(createdDrsData.document_url, createdDrsData.drsno)}
+              >
+                <FaEye />
+                View PDF
+              </button>
+              <button
+                className="pdf-action-btn download"
+                onClick={() =>
+                  handleDownloadPDF(
+                    createdDrsData.document_url,
+                    createdDrsData.drsno
+                  )
+                }
+              >
+                <FaDownload />
+                Download PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (
