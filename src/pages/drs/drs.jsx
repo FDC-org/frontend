@@ -279,23 +279,66 @@ const CreateDRS = () => {
   }, [searchTerm]);
 
   // ---------------- PDF ACTIONS ----------------
-  const handleViewPDF = (url, drsno) => {
-    // Use absolute backend URL for view endpoint
-    const viewUrl = url || `${import.meta.env.VITE_API_LINK}/drs/view/${drsno}/`;
-    window.open(viewUrl, "_blank", "noopener,noreferrer");
+  const handleViewPDF = async (url, drsno) => {
+    try {
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      setDrsLoading(true);
+      const response = await axiosInstance.get(`drs/view/${drsno}/`, {
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const pdfUrl = window.URL.createObjectURL(blob);
+      window.open(pdfUrl, "_blank", "noopener,noreferrer");
+
+      // Clean up the URL object after a delay
+      setTimeout(() => window.URL.revokeObjectURL(pdfUrl), 100);
+    } catch (error) {
+      console.error("Error viewing PDF:", error);
+      setStatus("Error viewing PDF");
+      setToast(true);
+    } finally {
+      setDrsLoading(false);
+    }
   };
 
-  const handleDownloadPDF = (url, drsno) => {
-    // Use absolute backend URL for download endpoint
-    const downloadUrl = url || `${import.meta.env.VITE_API_LINK}/drs/download/${drsno}/`;
+  const handleDownloadPDF = async (url, drsno) => {
+    try {
+      if (url) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `DRS_${drsno}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
 
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = `DRS_${drsno}.pdf`;
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const response = await axiosInstance.get(`drs/download/${drsno}/`, {
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const downloadUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `DRS_${drsno}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      setStatus("Error downloading PDF");
+      setToast(true);
+    }
   };
 
   const closeSuccessModal = () => {
