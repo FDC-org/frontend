@@ -281,13 +281,13 @@ const CreateDRS = () => {
   // ---------------- PDF ACTIONS ----------------
   const handleViewPDF = (url, drsno) => {
     // Use absolute backend URL for view endpoint
-    const viewUrl = url || `http://localhost:8000/api/drs/view/${drsno}/`;
+    const viewUrl = url || `${import.meta.env.VITE_API_LINK}/drs/view/${drsno}/`;
     window.open(viewUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleDownloadPDF = (url, drsno) => {
     // Use absolute backend URL for download endpoint
-    const downloadUrl = url || `http://localhost:8000/api/drs/download/${drsno}/`;
+    const downloadUrl = url || `${import.meta.env.VITE_API_LINK}/drs/download/${drsno}/`;
 
     const link = document.createElement("a");
     link.href = downloadUrl;
