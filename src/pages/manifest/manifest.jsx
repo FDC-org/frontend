@@ -61,13 +61,13 @@ const Manifest = () => {
   // ---------------- PDF ACTIONS ----------------
   const handleViewManifest = (manifestNumber) => {
     // Use absolute backend URL for view endpoint
-    const viewUrl = `http://localhost:8000/api/manifest/view/${manifestNumber}/`;
+    const viewUrl = `${import.meta.env.VITE_API_LINK}/manifest/view/${manifestNumber}/`;
     window.open(viewUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleDownloadManifest = (manifestNumber) => {
     // Use absolute backend URL for download endpoint
-    const downloadUrl = `http://localhost:8000/api/manifest/download/${manifestNumber}/`;
+    const downloadUrl = `${import.meta.env.VITE_API_LINK}/manifest/download/${manifestNumber}/`;
 
     const link = document.createElement("a");
     link.href = downloadUrl;
