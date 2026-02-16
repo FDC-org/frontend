@@ -6,13 +6,18 @@ import { Spinner } from "../../components/spinner/spinner";
 import axiosInstance from "../../components/axios";
 import { useNavigate } from "react-router-dom";
 import { isLoggedIn } from "../../components/auth";
+
 import { MdCalendarToday, MdVisibility, MdLocalShipping } from "react-icons/md";
 import { FaEye, FaDownload } from "react-icons/fa";
+import Toast from "../../components/toast/toast";
 
 const Manifest = () => {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [data, setData] = useState({});
   const [datarender, setdatarednder] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [toast, setToast] = useState(false);
+  const [status, setStatus] = useState("");
   const nav = useNavigate();
 
   useEffect(() => {
@@ -59,23 +64,51 @@ const Manifest = () => {
   };
 
   // ---------------- PDF ACTIONS ----------------
-  const handleViewManifest = (manifestNumber) => {
-    // Use absolute backend URL for view endpoint
-    const viewUrl = `${import.meta.env.VITE_API_LINK}/manifest/view/${manifestNumber}/`;
-    window.open(viewUrl, "_blank", "noopener,noreferrer");
+  const handleViewManifest = async (manifestNumber) => {
+    try {
+      setPdfLoading(true);
+      const response = await axiosInstance.get(`manifest/view/${manifestNumber}/`, {
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const pdfUrl = window.URL.createObjectURL(blob);
+      window.open(pdfUrl, "_blank", "noopener,noreferrer");
+
+      // Clean up the URL object after a delay
+      setTimeout(() => window.URL.revokeObjectURL(pdfUrl), 100);
+    } catch (error) {
+      console.error("Error viewing manifest:", error);
+      setStatus("Error viewing manifest");
+      setToast(true);
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
-  const handleDownloadManifest = (manifestNumber) => {
-    // Use absolute backend URL for download endpoint
-    const downloadUrl = `${import.meta.env.VITE_API_LINK}/manifest/download/${manifestNumber}/`;
+  const handleDownloadManifest = async (manifestNumber) => {
+    try {
+      const response = await axiosInstance.get(`manifest/download/${manifestNumber}/`, {
+        responseType: "blob",
+      });
 
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = `Manifest_${manifestNumber}.pdf`;
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const downloadUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `Manifest_${manifestNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Error downloading manifest:", error);
+      setStatus("Error downloading manifest");
+      setToast(true);
+    }
   };
 
   const totalItems = data ? Object.keys(data).length : 0;
@@ -204,7 +237,25 @@ const Manifest = () => {
           </div>
         </div>
       </div>
-    </div>
+
+      {
+        pdfLoading && (
+          <div className="viewoutscan__loading-overlay">
+            <Spinner />
+            <p>Processing PDF...</p>
+          </div>
+        )
+      }
+      {
+        toast && (
+          <Toast
+            message={status}
+            type={status.includes("Success") ? "success" : "error"}
+            onclose={() => setToast(false)}
+          />
+        )
+      }
+    </div >
   );
 };
 
