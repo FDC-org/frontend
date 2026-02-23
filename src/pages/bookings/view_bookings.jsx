@@ -25,6 +25,7 @@ const ViewBookings = () => {
   const [toast, setToast] = useState(null);
   const [childPiecesModal, setChildPiecesModal] = useState(null);
   const [loadingChildPieces, setLoadingChildPieces] = useState(false);
+  const [downloadingAwb, setDownloadingAwb] = useState(null);
 
   // Child Pieces Modal
   const [showChildModal, setShowChildModal] = useState(false);
@@ -165,6 +166,31 @@ const ViewBookings = () => {
     });
   };
 
+  const handleDownloadPdf = async (awb) => {
+    try {
+      setDownloadingAwb(awb);
+      const response = await axiosInstance.get(`booking/pdf/${awb}/`, {
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `booking_${awb}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download PDF:", err);
+      setToast({
+        message: "Failed to download PDF",
+        type: "error",
+      });
+    } finally {
+      setDownloadingAwb(null);
+    }
+  };
+
   const handleRowClick = (awbno) => {
     navigate(`/track/${awbno}`);
   };
@@ -243,12 +269,13 @@ const ViewBookings = () => {
                   <th>Weight</th>
                   <th>Pieces</th>
                   <th>Child Pieces</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredBookings.length === 0 ? (
                   <tr>
-                    <td colSpan="10" className="view-bookings__empty">
+                    <td colSpan="11" className="view-bookings__empty">
                       <div className="view-bookings__empty-state">
                         <svg
                           width="64"
@@ -316,6 +343,20 @@ const ViewBookings = () => {
                           <span className="view-bookings__no-child">-</span>
                         )}
                       </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <button
+                          className="view-bookings__action-btn view-bookings__action-btn--pdf"
+                          onClick={() => handleDownloadPdf(booking.awbno)}
+                          title="Download PDF"
+                          disabled={downloadingAwb === booking.awbno}
+                        >
+                          {downloadingAwb === booking.awbno ? (
+                            <Spinner size="sm" />
+                          ) : (
+                            <MdFileDownload />
+                          )}
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -350,7 +391,7 @@ const ViewBookings = () => {
 
             <div className="child-modal-body">
               {!childPiecesModal.childPieces ||
-              childPiecesModal.childPieces.length === 0 ? (
+                childPiecesModal.childPieces.length === 0 ? (
                 <div className="child-modal-empty">
                   <FaBoxes />
                   <p>No child pieces found</p>
