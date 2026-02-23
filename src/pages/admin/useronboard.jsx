@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MdSearch, MdChevronLeft, MdChevronRight } from "react-icons/md";
 import axiosInstance from "../../components/axios";
 import { Spinner } from "../../components/spinner/spinner";
+import Toast from "../../components/toast/toast";
 
 const UserOnboard = () => {
     const [units, setUnits] = useState([]); // Hubs or Branches
