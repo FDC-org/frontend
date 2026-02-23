@@ -157,14 +157,6 @@ const DeliveryDRSList = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (
-        res.data.error === "invalid token" ||
-        res.data.error === "token expired"
-      ) {
-        navigate("/login");
-        return;
-      }
-
       if (res.data.status === "success") {
         setStatusMsg("Success");
         setToast(true);
