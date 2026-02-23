@@ -61,14 +61,6 @@ const CreateDRS = () => {
       try {
         const res = await axiosInstance.get("get_boy_loc/");
 
-        if (
-          res.data.error === "invalid token" ||
-          res.data.error === "token expired"
-        ) {
-          navigate("/login");
-          return;
-        }
-
         if (res.data.status === "success") {
           const data = res.data.data[0];
 
@@ -174,14 +166,6 @@ const CreateDRS = () => {
         delivery_boy: selectedBoy,
       });
 
-      if (
-        res.data.error === "invalid token" ||
-        res.data.error === "token expired"
-      ) {
-        navigate("/login");
-        return;
-      }
-
       if (res.data.status === "success") {
         // Store DRS data for modal (new API format)
         const newDrsData = {
@@ -222,14 +206,6 @@ const CreateDRS = () => {
       setDrsLoading(true);
 
       const res = await axiosInstance.get(`drs/${date}`);
-
-      if (
-        res.data.error === "invalid token" ||
-        res.data.error === "token expired"
-      ) {
-        navigate("/login");
-        return;
-      }
 
       if (res.data.status === "success") {
         setDrsList(res.data.data);

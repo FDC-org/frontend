@@ -2,7 +2,7 @@ import { IoIosNotifications } from "react-icons/io";
 import { AiOutlineLogout } from "react-icons/ai";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { isLoggedIn } from "../auth";
+import { isLoggedIn, logout } from "../auth";
 import axiosInstance from "../axios";
 import Toast from "../toast/toast";
 import { Spinner } from "../spinner/spinner";
@@ -50,11 +50,6 @@ function NavBar() {
         .then((response) => {
           if (response.data.status === "new_token") {
             localStorage.setItem("token", response.data.new_token);
-          } else if (
-            response.data.status === "invalid" ||
-            response.data.error === "invalid token"
-          ) {
-            handleLogout();
           }
         })
         .catch((error) => console.error("Token verification failed:", error));
@@ -79,21 +74,11 @@ function NavBar() {
         },
       );
 
-      const { error, status, new_token, code_name, type, name } = response.data;
-
-      // Handle invalid token
-      if (
-        error === "invalid token" ||
-        error === "token expired" ||
-        status === "invalid"
-      ) {
-        handleLogout();
-        return;
-      }
+      const { code_name, type, name } = response.data;
 
       // Handle token refresh
-      if (new_token && new_token !== "none") {
-        localStorage.setItem("token", new_token);
+      if (response.data.new_token && response.data.new_token !== "none") {
+        localStorage.setItem("token", response.data.new_token);
         window.location.reload();
         return;
       }
@@ -111,16 +96,6 @@ function NavBar() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    document.cookie.split(";").forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    window.location.href = "/login";
   };
 
   const handleNavigation = (path) => {
@@ -220,7 +195,7 @@ function NavBar() {
 
             <button
               className="navbar__logout"
-              onClick={handleLogout}
+              onClick={logout}
               aria-label="Logout"
               title="Logout"
             >
