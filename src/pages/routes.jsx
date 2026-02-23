@@ -12,7 +12,7 @@ import AdminHome from "./admin/AdminHome";
 import AdminDashboard from "./admin/AdminDashboard";
 import HubOnboard from "./admin/HubOnboard";
 import BranchOnboard from "./admin/BranchOnboard";
-import UserOnboard from "./admin/UserOnboard";
+import UserOnboard from "./admin/UserOnboard.jsx";
 import EmployeeOnboard from "./admin/EmployeeOnboard";
 import Profile from "./profile/profile";
 import CreateDRS from "./drs/drs.jsx";
