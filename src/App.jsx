@@ -15,14 +15,14 @@ function App() {
 
   return (
     <div className="root">
-      <NavBar />
-      {logged && (
+      {localStorage.getItem("type") !== "ADMIN" && <NavBar />}
+      {logged && localStorage.getItem("type") !== "ADMIN" && (
         <>
           <QuickMenuBar />
         </>
       )}
       <PageRoutes />
-      <BottomNav />
+      {localStorage.getItem("type") !== "ADMIN" && <BottomNav />}
     </div>
   );
 }

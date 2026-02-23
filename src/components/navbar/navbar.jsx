@@ -114,10 +114,12 @@ function NavBar() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("type");
-    localStorage.removeItem("hubname");
-    localStorage.removeItem("user");
+    localStorage.clear();
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
     window.location.href = "/login";
   };
 

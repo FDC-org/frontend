@@ -29,6 +29,8 @@ const Profile = () => {
     branch_code: "",
     branch_name: "",
     branch_type: "",
+    related_hub_name: "",
+    related_hub_code: "",
   });
 
   // Delivery Boys
@@ -224,6 +226,8 @@ const Profile = () => {
     );
   }
 
+  const isHub = userInfo.branch_type?.toLowerCase() === "hub";
+
   return (
     <div className="profile-page">
       <div className="profile-container">
@@ -275,7 +279,7 @@ const Profile = () => {
           <div className="section-header">
             <h2 className="section-title">
               <FaBuilding className="section-icon" />
-              Branch / Hub Details
+              {isHub ? "Hub Details" : "Branch Details"}
             </h2>
           </div>
           <div className="info-card">
@@ -283,7 +287,7 @@ const Profile = () => {
               <div className="info-item">
                 <div className="info-label">
                   <FaIdCard className="info-icon" />
-                  Branch Code
+                  {isHub ? "Hub Code" : "Branch Code"}
                 </div>
                 <div className="info-value">
                   {userInfo.branch_code || "N/A"}
@@ -292,7 +296,7 @@ const Profile = () => {
               <div className="info-item">
                 <div className="info-label">
                   <FaBuilding className="info-icon" />
-                  Branch Name
+                  {isHub ? "Hub Name" : "Branch Name"}
                 </div>
                 <div className="info-value">
                   {userInfo.branch_name || "N/A"}
@@ -311,6 +315,18 @@ const Profile = () => {
                   </span>
                 </div>
               </div>
+
+              {!isHub && userInfo.related_hub_name && (
+                <div className="info-item">
+                  <div className="info-label">
+                    <FaBuilding className="info-icon" />
+                    Related Hub
+                  </div>
+                  <div className="info-value">
+                    {userInfo.related_hub_name} {userInfo.related_hub_code ? `(${userInfo.related_hub_code})` : ""}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

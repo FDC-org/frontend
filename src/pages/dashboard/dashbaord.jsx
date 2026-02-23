@@ -10,6 +10,8 @@ export const Dashboard = () => {
   useEffect(() => {
     if (!isLoggedIn()) {
       navigate("/login");
+    } else if (localStorage.getItem("type") === "ADMIN") {
+      navigate("/admin");
     }
   }, [navigate]);
 
