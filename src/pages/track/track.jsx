@@ -45,14 +45,6 @@ const Track = () => {
 
       const res = await axiosInstance.get(`track/${awbNumber}`);
 
-      if (
-        res.data.error === "invalid token" ||
-        res.data.error === "token expired"
-      ) {
-        navigate("/login");
-        return;
-      }
-
       if (res.data.status === "success") {
         setData(res.data);
       } else {
@@ -324,9 +316,8 @@ const Track = () => {
 
                           return (
                             <div
-                              className={`timeline-item ${
-                                index === 0 ? "active" : ""
-                              } ${eventStatus ? `status-${eventStatus}` : ""}`}
+                              className={`timeline-item ${index === 0 ? "active" : ""
+                                } ${eventStatus ? `status-${eventStatus}` : ""}`}
                               key={index}
                             >
                               <div className="timeline-marker">
