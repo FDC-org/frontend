@@ -46,10 +46,31 @@ const Login = () => {
             })
             .then((r) => console.log(r.data))
             .catch((e) => console.log(e));
-          setTimeout(() => {
-            console.log(localStorage.getItem("token"));
-            window.location.href = "/";
-          }, 1000);
+
+          // Fetch user details to check type
+          try {
+            const userRes = await axiosInstance.get("userdetails/", {
+              headers: { Authorization: "Token " + response.data.token }
+            });
+            localStorage.setItem("type", userRes.data.type);
+            localStorage.setItem("hubname", userRes.data.code_name);
+            localStorage.setItem("user", userRes.data.name);
+
+            setTimeout(() => {
+              if (userRes.data.type === "ADMIN") {
+                window.location.href = "/admin";
+              } else {
+                window.location.href = "/";
+              }
+            }, 1000);
+
+          } catch (err) {
+            console.error("Failed to fetch user details on login", err);
+            // Fallback default redirect
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 1000);
+          }
         })
         .catch((e) => {
           seterror("invalid username or password");

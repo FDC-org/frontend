@@ -74,6 +74,10 @@ axiosInstance.interceptors.response.use(
         // Redirect to login
         window.location.href = "/login";
       }
+
+      if (status === 403) {
+        alert("Access Denied: You do not have permission to perform this action.");
+      }
     }
 
     return Promise.reject(error);
