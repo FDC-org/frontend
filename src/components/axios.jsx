@@ -61,9 +61,7 @@ axiosInstance.interceptors.response.use(
 
     if (
       errorMsg.includes("invalid token") ||
-      errorMsg.includes("token expired") ||
-      errorMsg === "invalid" ||
-      errorMsg === "error"
+      errorMsg.includes("token expired")
     ) {
       logout();
       return Promise.reject(
@@ -90,8 +88,7 @@ axiosInstance.interceptors.response.use(
       if (
         status === 401 ||
         errorMsg.includes("invalid token") ||
-        errorMsg.includes("token expired") ||
-        errorMsg === "invalid"
+        errorMsg.includes("token expired")
       ) {
         logout();
       }
