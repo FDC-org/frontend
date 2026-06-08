@@ -32,6 +32,10 @@ const ViewBookings = () => {
   const [selectedChildPieces, setSelectedChildPieces] = useState([]);
   const [selectedAwb, setSelectedAwb] = useState("");
 
+  // Template Selection Modal
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [selectedPdfAwb, setSelectedPdfAwb] = useState("");
+
   useEffect(() => {
     fetchBookings(date);
   }, [date]);
@@ -166,10 +170,10 @@ const ViewBookings = () => {
     });
   };
 
-  const handleDownloadPdf = async (awb) => {
+  const handleDownloadPdf = async (awb, templateType = "parcel") => {
     try {
       setDownloadingAwb(awb);
-      const response = await axiosInstance.get(`booking/pdf/${awb}/`, {
+      const response = await axiosInstance.get(`booking/pdf/${awb}/?type=${templateType}`, {
         responseType: "blob",
       });
 
@@ -177,7 +181,7 @@ const ViewBookings = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `booking_${awb}.pdf`;
+      link.download = `booking_${awb}_${templateType}.pdf`;
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
@@ -346,7 +350,10 @@ const ViewBookings = () => {
                       <td onClick={(e) => e.stopPropagation()}>
                         <button
                           className="view-bookings__action-btn view-bookings__action-btn--pdf"
-                          onClick={() => handleDownloadPdf(booking.awbno)}
+                          onClick={() => {
+                            setSelectedPdfAwb(booking.awbno);
+                            setShowTemplateModal(true);
+                          }}
                           title="Download PDF"
                           disabled={downloadingAwb === booking.awbno}
                         >
@@ -414,6 +421,59 @@ const ViewBookings = () => {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Selection Modal */}
+      {showTemplateModal && (
+        <div
+          className="template-modal-overlay"
+          onClick={() => setShowTemplateModal(false)}
+        >
+          <div className="template-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="template-modal-header">
+              <h3>Select Booking Receipt Template</h3>
+              <button
+                className="template-modal-close"
+                onClick={() => setShowTemplateModal(false)}
+              >
+                <MdClose />
+              </button>
+            </div>
+            <div className="template-modal-body">
+              <p className="template-modal-desc">
+                Choose the design style for downloading AWB: <strong>{selectedPdfAwb}</strong>
+              </p>
+              <div className="template-options">
+                <div 
+                  className="template-option-card"
+                  onClick={() => {
+                    handleDownloadPdf(selectedPdfAwb, "parcel");
+                    setShowTemplateModal(false);
+                  }}
+                >
+                  <div className="template-option-icon parcel">📦</div>
+                  <div className="template-option-info">
+                    <h4>Parcel Template (Default)</h4>
+                    <p>Vertical layout, prints 3 slips per page.</p>
+                  </div>
+                </div>
+                <div 
+                  className="template-option-card"
+                  onClick={() => {
+                    handleDownloadPdf(selectedPdfAwb, "cargo");
+                    setShowTemplateModal(false);
+                  }}
+                >
+                  <div className="template-option-icon cargo">🚛</div>
+                  <div className="template-option-info">
+                    <h4>Cargo Template</h4>
+                    <p>Vertical layout, prints 2 copies on a single sheet.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
