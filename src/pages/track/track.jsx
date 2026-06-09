@@ -86,6 +86,33 @@ const Track = () => {
   const isChildPiece = data?.is_child_piece || false;
   const parentAwb = data?.parent_awb || null;
 
+  const getActiveStep = () => {
+    if (!data) return 0;
+    
+    // Check if delivered
+    const isDelivered = delivery.some(d => d.status === "delivered") || 
+                        tracking.some(e => e.event.toLowerCase().includes("delivered") && !e.event.toLowerCase().includes("undelivered"));
+    if (isDelivered) return 4;
+    
+    // Check if out for delivery
+    const isOfd = delivery.some(d => d.status === "ofd") || 
+                  tracking.some(e => e.event.toLowerCase().includes("out for delivery") || e.event.toLowerCase().includes("ofd"));
+    if (isOfd) return 3;
+    
+    // If we have events, we are in transit
+    if (tracking.length > 0) return 2;
+    
+    // If booking exists, we are booked
+    if (booking && booking !== "none") return 1;
+    
+    return 0;
+  };
+
+  const isFailed = delivery.some(d => d.status === "undelivered" || d.status === "rto") ||
+                   tracking.some(e => e.event.toLowerCase().includes("undelivered") || e.event.toLowerCase().includes("rto"));
+
+  const activeStep = getActiveStep();
+
   return (
     <div className="track-container">
       {/* Hero Search Section */}
@@ -157,38 +184,102 @@ const Track = () => {
           </div>
         ) : data ? (
           <div className="tracking-results">
-            {/* Status Badge */}
-            <div className="awb-header">
-              <div className="awb-badge">
-                <Package size={20} />
-                <span>
-                  AWB: {isChildPiece && parentAwb ? awbno : awbNumber}
-                </span>
+            {/* Stepper Progress Card */}
+            <div className="stepper-card info-card">
+              <div className="stepper-wrapper">
+                <div className={`step-item ${activeStep >= 1 ? "completed" : ""} ${activeStep === 1 ? "active" : ""}`}>
+                  <div className="step-icon">
+                    <Package size={20} />
+                  </div>
+                  <div className="step-label">Booked</div>
+                </div>
+                <div className={`step-connector ${activeStep >= 2 ? "completed" : ""}`} />
+                
+                <div className={`step-item ${activeStep >= 2 ? "completed" : ""} ${activeStep === 2 ? "active" : ""}`}>
+                  <div className="step-icon">
+                    <Truck size={20} />
+                  </div>
+                  <div className="step-label">In Transit</div>
+                </div>
+                <div className={`step-connector ${activeStep >= 3 ? "completed" : ""}`} />
+                
+                <div className={`step-item ${activeStep >= 3 ? "completed" : ""} ${activeStep === 3 ? "active" : ""} ${isFailed && activeStep === 3 ? "failed" : ""}`}>
+                  <div className="step-icon">
+                    <Navigation size={20} />
+                  </div>
+                  <div className="step-label">{isFailed ? "Delivery Issue" : "Out For Delivery"}</div>
+                </div>
+                <div className={`step-connector ${activeStep >= 4 ? "completed" : ""} ${isFailed ? "failed" : ""}`} />
+                
+                <div className={`step-item ${activeStep >= 4 ? "completed" : ""} ${activeStep === 4 ? "active" : ""} ${isFailed ? "failed" : ""}`}>
+                  <div className="step-icon">
+                    {isFailed ? <XCircle size={20} /> : <CheckCircle size={20} />}
+                  </div>
+                  <div className="step-label">{isFailed ? "Failed / RTO" : "Delivered"}</div>
+                </div>
               </div>
-              {awbRef && (
-                <div className="reference-badge">
-                  <span>#Reference Number: {awbRef}</span>
+            </div>
+
+            {/* Dynamic Visual Route Card */}
+            <div className="route-card info-card">
+              <div className="route-header">
+                <div className="route-awb-info">
+                  <span className="awb-label">AWB Number</span>
+                  <h2 className="awb-val">{isChildPiece && parentAwb ? awbno : awbNumber}</h2>
                 </div>
-              )}
-              {isChildPiece && parentAwb && (
-                <div className="parent-awb-badge">
-                  <FaBoxes />
-                  <span>Child Piece of: {parentAwb}</span>
+                <div className="route-badges">
+                  {awbRef && (
+                    <span className="reference-badge">#Reference: {awbRef}</span>
+                  )}
+                  {isChildPiece && parentAwb && (
+                    <span className="parent-awb-badge">
+                      <FaBoxes /> Child of: {parentAwb}
+                    </span>
+                  )}
+                  {hasChildren && (
+                    <button
+                      className="child-pieces-btn"
+                      onClick={() => setShowChildModal(true)}
+                      title="View child pieces"
+                    >
+                      <FaBoxes />
+                      <span>{childPieces.length} Child Pieces</span>
+                    </button>
+                  )}
+                  {delivery.length > 0 && (
+                    <StatusBadge status={delivery[0].status} />
+                  )}
                 </div>
-              )}
-              {hasChildren && (
-                <button
-                  className="child-pieces-btn"
-                  onClick={() => setShowChildModal(true)}
-                  title="View child pieces"
-                >
-                  <FaBoxes />
-                  <span>{childPieces.length} Child Pieces</span>
-                </button>
-              )}
-              {delivery.length > 0 && (
-                <StatusBadge status={delivery[0].status} />
-              )}
+              </div>
+              
+              <div className="route-visual">
+                <div className="route-point">
+                  <div className="point-dot-wrapper origin">
+                    <MapPin size={24} />
+                  </div>
+                  <div className="point-info">
+                    <span className="point-label">Origin Hub</span>
+                    <span className="point-name">{booking !== "none" ? booking.booked_hub : "-"}</span>
+                  </div>
+                </div>
+                
+                <div className="route-line-wrapper">
+                  <div className={`route-line ${activeStep >= 4 ? "completed" : ""} ${isFailed ? "failed" : ""}`} />
+                  <div className={`route-vehicle ${activeStep >= 2 ? "moving" : ""} ${isFailed ? "failed" : ""}`}>
+                    <Truck size={22} />
+                  </div>
+                </div>
+                
+                <div className="route-point">
+                  <div className="point-dot-wrapper destination">
+                    <MapPin size={24} />
+                  </div>
+                  <div className="point-info">
+                    <span className="point-label">Destination Hub</span>
+                    <span className="point-name">{booking !== "none" ? booking.destination : "-"}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Two Column Layout */}
@@ -202,54 +293,106 @@ const Track = () => {
                       <h3>Shipment Details</h3>
                     </div>
                     <div className="card-body">
-                      <div className="info-grid">
-                        <InfoItem
-                          icon={<MapPin size={18} />}
-                          label="Origin"
-                          value={booking.booked_hub}
-                        />
-                        <InfoItem
-                          icon={<Navigation size={18} />}
-                          label="Destination"
-                          value={booking.destination}
-                        />
-                        <InfoItem
-                          icon={<Calendar size={18} />}
-                          label="Booking Date"
-                          value={
-                            booking.date
-                              ? format(new Date(booking.date), "dd MMM yyyy")
-                              : "-"
-                          }
-                        />
-                        {booking.reference && (
+                      {/* Section 1: Route & Logistics */}
+                      <div className="detail-section">
+                        <h4 className="detail-section-title">Route & Logistics</h4>
+                        <div className="info-grid">
+                          <InfoItem
+                            icon={<MapPin size={18} />}
+                            label="Origin"
+                            value={booking.booked_hub}
+                          />
+                          <InfoItem
+                            icon={<Navigation size={18} />}
+                            label="Destination"
+                            value={booking.destination}
+                          />
+                          <InfoItem
+                            icon={<Calendar size={18} />}
+                            label="Booking Date"
+                            value={
+                              booking.date
+                                ? format(new Date(booking.date), "dd MMM yyyy")
+                                : "-"
+                            }
+                          />
+                          {booking.reference && (
+                            <InfoItem
+                              icon={<Package size={18} />}
+                              label="Reference"
+                              value={booking.reference}
+                            />
+                          )}
                           <InfoItem
                             icon={<Package size={18} />}
-                            label="Reference"
-                            value={booking.reference}
+                            label="Pieces"
+                            value={booking.pcs}
                           />
-                        )}
-                        <InfoItem
-                          icon={<Package size={18} />}
-                          label="Pieces"
-                          value={booking.pcs}
-                        />
-                        <InfoItem
-                          icon={<Weight size={18} />}
-                          label="Weight"
-                          value={`${booking.wt} kg`}
-                        />
-                        <InfoItem
-                          icon={<User size={18} />}
-                          label="Receiver name"
-                          value={booking.recname}
-                        />
-                        <InfoItem
-                          icon={<User size={18} />}
-                          label="Sender name"
-                          value={booking.sendername}
-                        />
+                          <InfoItem
+                            icon={<Weight size={18} />}
+                            label="Weight"
+                            value={`${booking.wt} kg`}
+                          />
+                        </div>
                       </div>
+
+                      {/* Section 2: Party Details */}
+                      <div className="detail-section">
+                        <h4 className="detail-section-title" style={{ marginTop: "8px" }}>Sender & Receiver</h4>
+                        <div className="info-grid">
+                          <InfoItem
+                            icon={<User size={18} />}
+                            label="Sender name"
+                            value={booking.sendername}
+                          />
+                          <InfoItem
+                            icon={<User size={18} />}
+                            label="Receiver name"
+                            value={booking.recname}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Section 3: E-way Bill & Invoice Details */}
+                      {(booking.eway_bill_no || booking.invoice_no || booking.invoice_amount) && (
+                        <div className="detail-section" style={{ paddingBottom: "0" }}>
+                          <h4 className="detail-section-title" style={{ marginTop: "8px" }}>E-way Bill & Invoice</h4>
+                          <div className="info-grid">
+                            {booking.eway_bill_no && (
+                              <InfoItem
+                                icon={<Package size={18} />}
+                                label="E-way Bill No"
+                                value={booking.eway_bill_no}
+                              />
+                            )}
+                            {booking.invoice_no && (
+                              <InfoItem
+                                icon={<Package size={18} />}
+                                label="Invoice No"
+                                value={booking.invoice_no}
+                              />
+                            )}
+                            {booking.invoice_date && (
+                              <InfoItem
+                                icon={<Calendar size={18} />}
+                                label="Invoice Date"
+                                value={
+                                  booking.invoice_date
+                                    ? format(new Date(booking.invoice_date), "dd MMM yyyy")
+                                    : "-"
+                                }
+                              />
+                            )}
+                            {booking.invoice_amount && (
+                              <InfoItem
+                                icon={<Weight size={18} />}
+                                label="Invoice Amount"
+                                value={`Rs. ${parseFloat(booking.invoice_amount).toFixed(2)}`}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -323,14 +466,14 @@ const Track = () => {
                               <div className="timeline-marker">
                                 <div className="timeline-dot">
                                   {eventStatus === "delivered" && (
-                                    <CheckCircle size={12} />
+                                    <CheckCircle size={16} />
                                   )}
-                                  {eventStatus === "ofd" && <Truck size={12} />}
+                                  {eventStatus === "ofd" && <Truck size={16} />}
                                   {eventStatus === "undelivered" && (
-                                    <XCircle size={12} />
+                                    <XCircle size={16} />
                                   )}
                                   {eventStatus === "rto" && (
-                                    <XCircle size={12} />
+                                    <XCircle size={16} />
                                   )}
                                 </div>
                                 {index !== tracking.length - 1 && (
