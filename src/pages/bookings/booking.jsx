@@ -52,6 +52,16 @@ const Booking = () => {
   const [showChildPopup, setShowChildPopup] = useState(false);
   const [childPiecesStart, setChildPiecesStart] = useState("");
 
+  // E-way bill popup states
+  const [hasEwayBill, setHasEwayBill] = useState(false);
+  const [showEwayPopup, setShowEwayPopup] = useState(false);
+  const [ewayData, setEwayData] = useState({
+    eway_bill_no: "",
+    invoice_no: "",
+    invoice_date: "",
+    invoice_amount: "",
+  });
+
   useEffect(() => {
     if (!isLoggedIn()) {
       navigate("/login");
@@ -182,15 +192,47 @@ const Booking = () => {
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    // If pieces > 1, show child pieces popup
+    // Show E-way bill details popup if checkbox is checked
+    if (hasEwayBill) {
+      setShowEwayPopup(true);
+      return;
+    }
+
+    // If pieces > 1, show child pieces popup next
     if (parseInt(formData.pcs) > 1) {
       setShowChildPopup(true);
       setChildPiecesStart("");
       return;
     }
 
-    // If single piece, submit directly
+    // If neither, submit directly
     await submitBooking();
+  };
+
+  const handleEwayPopupSubmit = async () => {
+    if (!ewayData.eway_bill_no.trim()) {
+      showToast("E-way Bill Number is required", "error");
+      return;
+    }
+    if (!ewayData.invoice_no.trim()) {
+      showToast("Invoice Number is required", "error");
+      return;
+    }
+    if (!ewayData.invoice_amount || parseFloat(ewayData.invoice_amount) <= 0) {
+      showToast("Please enter a valid Invoice Amount", "error");
+      return;
+    }
+
+    setShowEwayPopup(false);
+
+    // If pieces > 1, show child pieces popup next
+    if (parseInt(formData.pcs) > 1) {
+      setShowChildPopup(true);
+      setChildPiecesStart("");
+    } else {
+      // Otherwise, submit directly!
+      await submitBooking("", ewayData);
+    }
   };
 
   const handleChildPopupSubmit = async () => {
@@ -199,16 +241,20 @@ const Booking = () => {
       return;
     }
 
-    await submitBooking(childPiecesStart);
+    await submitBooking(childPiecesStart, hasEwayBill ? ewayData : null);
   };
 
-  const submitBooking = async (childStart = "") => {
+  const submitBooking = async (childStart = "", ewayFields = null) => {
     setSubmitLoading(true);
 
     try {
       const bookingData = {
         ...formData,
         child_pieces_start: childStart,
+        eway_bill_no: ewayFields ? ewayFields.eway_bill_no : "",
+        invoice_no: ewayFields ? ewayFields.invoice_no : "",
+        invoice_date: ewayFields ? ewayFields.invoice_date : "",
+        invoice_amount: ewayFields ? ewayFields.invoice_amount : "",
       };
 
       const response = await axiosInstance.post("booking/", bookingData, {
@@ -228,9 +274,17 @@ const Booking = () => {
 
         showToast("Booking created successfully!", "success");
 
-        // Close popup and reset
+        // Close popups and reset E-way bill state
         setShowChildPopup(false);
         setChildPiecesStart("");
+        setShowEwayPopup(false);
+        setEwayData({
+          eway_bill_no: "",
+          invoice_no: "",
+          invoice_date: "",
+          invoice_amount: "",
+        });
+        setHasEwayBill(false);
 
         // Reset form fields
         setFormData((prev) => ({
@@ -365,6 +419,18 @@ const Booking = () => {
                   ref={(el) => (inputRefs.current[3] = el)}
                   onKeyDown={(e) => handleKeyDown(e, 3)}
                 />
+              </div>
+
+              <div className="form-field form-field--checkbox-container">
+                <label className="form-field__checkbox-label">
+                  <input
+                    type="checkbox"
+                    className="form-field__checkbox-input"
+                    checked={hasEwayBill}
+                    onChange={(e) => setHasEwayBill(e.target.checked)}
+                  />
+                  <span className="checkbox-text">E-way Bill</span>
+                </label>
               </div>
             </div>
           </section>
@@ -679,6 +745,90 @@ const Booking = () => {
           </section>
         )}
       </div>
+
+      {/* E-way Bill Details Popup */}
+      {showEwayPopup && (
+        <div className="popup-overlay" onClick={() => setShowEwayPopup(false)}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            <div className="popup-header">
+              <h3 className="popup-title">
+                <FaBoxes />
+                E-way Bill Details
+              </h3>
+              <button
+                className="popup-close"
+                onClick={() => setShowEwayPopup(false)}
+              >
+                <MdClose />
+              </button>
+            </div>
+
+            <div className="popup-body">
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label">E-way Bill Number *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Enter 10-digit/alpha E-way Bill Number"
+                  value={ewayData.eway_bill_no}
+                  onChange={(e) => setEwayData(prev => ({ ...prev, eway_bill_no: e.target.value }))}
+                  autoFocus
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label">Invoice Number *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Enter Invoice Number"
+                  value={ewayData.invoice_no}
+                  onChange={(e) => setEwayData(prev => ({ ...prev, invoice_no: e.target.value }))}
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label">Invoice Date</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={ewayData.invoice_date}
+                  onChange={(e) => setEwayData(prev => ({ ...prev, invoice_date: e.target.value }))}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Invoice Amount *</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input"
+                  placeholder="Enter Invoice Amount (Rs.)"
+                  value={ewayData.invoice_amount}
+                  onChange={(e) => setEwayData(prev => ({ ...prev, invoice_amount: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="popup-footer">
+              <button
+                className="btn-cancel"
+                onClick={() => setShowEwayPopup(false)}
+                disabled={submitLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-submit"
+                onClick={handleEwayPopupSubmit}
+                disabled={submitLoading}
+              >
+                Confirm & Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Child Pieces Popup */}
       {showChildPopup && (
