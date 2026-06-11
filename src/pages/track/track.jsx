@@ -15,6 +15,9 @@ import {
   Clock,
   Navigation,
   X,
+  ChevronDown,
+  ChevronUp,
+  FileText,
 } from "lucide-react";
 import { FaBoxes } from "react-icons/fa";
 import "./track.css";
@@ -29,6 +32,8 @@ const Track = () => {
   const [error, setError] = useState("");
   const [showImage, setShowImage] = useState(null);
   const [showChildModal, setShowChildModal] = useState(false);
+  const [showEwayDetails, setShowEwayDetails] = useState(false);
+  const [showEwayModal, setShowEwayModal] = useState(false);
 
   useEffect(() => {
     if (awbno && awbno.trim()) {
@@ -114,25 +119,74 @@ const Track = () => {
   const activeStep = getActiveStep();
 
   return (
-    <div className="track-container">
-      {/* Hero Search Section */}
-      <div className="track-hero">
-        <div className="hero-content">
-          <h1 className="hero-title">
-            <Package className="hero-icon" />
-            Track Your Shipment
-          </h1>
-          <p className="hero-subtitle">
-            Enter your AWB number or Reference number to get real-time updates
-          </p>
+    <div className={`track-container ${data ? "dashboard-mode" : ""}`}>
+      {/* Search Header/Hero Section */}
+      {!data ? (
+        <div className="track-hero">
+          <div className="hero-content">
+            <h1 className="hero-title">
+              <Package className="hero-icon" />
+              Track Your Shipment
+            </h1>
+            <p className="hero-subtitle">
+              Enter your AWB number or Reference number to get real-time updates
+            </p>
 
-          <div className="search-wrapper">
+            <div className="search-wrapper">
+              <div className="search-input-group">
+                <Search className="search-icon" />
+                <input
+                  type="text"
+                  maxLength={50}
+                  placeholder="Enter AWB Number or Reference Number"
+                  value={awb}
+                  onChange={(e) => setAwb(e.target.value.trim())}
+                  onKeyPress={handleKeyPress}
+                  className="search-input"
+                />
+                {awb && (
+                  <button
+                    className="clear-btn"
+                    onClick={() => setAwb("")}
+                    aria-label="Clear"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={handleTrack}
+                disabled={loading || !awb.trim()}
+                className="track-btn"
+              >
+                {loading ? (
+                  <>
+                    <div className="spinner" />
+                    Tracking...
+                  </>
+                ) : (
+                  <>
+                    <Navigation size={18} />
+                    Track
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="track-header-bar">
+          <div className="header-title-group">
+            <Package className="header-icon" />
+            <h2 className="header-title">Track Shipment</h2>
+          </div>
+          <div className="search-wrapper compact">
             <div className="search-input-group">
               <Search className="search-icon" />
               <input
                 type="text"
                 maxLength={50}
-                placeholder="Enter AWB Number or Reference Number"
+                placeholder="Enter AWB or Reference"
                 value={awb}
                 onChange={(e) => setAwb(e.target.value.trim())}
                 onKeyPress={handleKeyPress}
@@ -151,26 +205,25 @@ const Track = () => {
             <button
               onClick={handleTrack}
               disabled={loading || !awb.trim()}
-              className="track-btn"
+              className="track-btn compact"
             >
               {loading ? (
                 <>
                   <div className="spinner" />
-                  Tracking...
                 </>
               ) : (
                 <>
-                  <Navigation size={18} />
-                  Track
+                  <Navigation size={16} />
+                  <span>Track</span>
                 </>
               )}
             </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Content Area */}
-      <div className="track-content">
+      <div className={`track-content ${data ? "dashboard-mode" : ""}`}>
         {loading ? (
           <div className="loading-state">
             <div className="loading-spinner" />
@@ -184,119 +237,129 @@ const Track = () => {
           </div>
         ) : data ? (
           <div className="tracking-results">
-            {/* Stepper Progress Card */}
-            <div className="stepper-card info-card">
-              <div className="stepper-wrapper">
-                <div className={`step-item ${activeStep >= 1 ? "completed" : ""} ${activeStep === 1 ? "active" : ""}`}>
-                  <div className="step-icon">
-                    <Package size={20} />
+            {/* Status & Route Row */}
+            <div className="status-route-row">
+              {/* Stepper Progress Card */}
+              <div className="stepper-card info-card">
+                <div className="stepper-wrapper">
+                  <div className={`step-item ${activeStep >= 1 ? "completed" : ""} ${activeStep === 1 ? "active" : ""}`}>
+                    <div className="step-icon">
+                      <Package size={20} />
+                    </div>
+                    <div className="step-label">Booked</div>
                   </div>
-                  <div className="step-label">Booked</div>
+                  <div className={`step-connector ${activeStep >= 2 ? "completed" : ""}`} />
+                  
+                  <div className={`step-item ${activeStep >= 2 ? "completed" : ""} ${activeStep === 2 ? "active" : ""}`}>
+                    <div className="step-icon">
+                      <Truck size={20} />
+                    </div>
+                    <div className="step-label">In Transit</div>
+                  </div>
+                  <div className={`step-connector ${activeStep >= 3 ? "completed" : ""}`} />
+                  
+                  <div className={`step-item ${activeStep >= 3 ? "completed" : ""} ${activeStep === 3 ? "active" : ""} ${isFailed && activeStep === 3 ? "failed" : ""}`}>
+                    <div className="step-icon">
+                      <Navigation size={20} />
+                    </div>
+                    <div className="step-label">{isFailed ? "Delivery Issue" : "Out For Delivery"}</div>
+                  </div>
+                  <div className={`step-connector ${activeStep >= 4 ? "completed" : ""} ${isFailed ? "failed" : ""}`} />
+                  
+                  <div className={`step-item ${activeStep >= 4 ? "completed" : ""} ${activeStep === 4 ? "active" : ""} ${isFailed ? "failed" : ""}`}>
+                    <div className="step-icon">
+                      {isFailed ? <XCircle size={20} /> : <CheckCircle size={20} />}
+                    </div>
+                    <div className="step-label">{isFailed ? "Failed / RTO" : "Delivered"}</div>
+                  </div>
                 </div>
-                <div className={`step-connector ${activeStep >= 2 ? "completed" : ""}`} />
-                
-                <div className={`step-item ${activeStep >= 2 ? "completed" : ""} ${activeStep === 2 ? "active" : ""}`}>
-                  <div className="step-icon">
-                    <Truck size={20} />
+              </div>
+
+              {/* Dynamic Visual Route Card */}
+              <div className="route-card info-card">
+                <div className="route-header">
+                  <div className="route-awb-info">
+                    <span className="awb-label">AWB Number</span>
+                    <h2 className="awb-val">{isChildPiece && parentAwb ? awbno : awbNumber}</h2>
                   </div>
-                  <div className="step-label">In Transit</div>
+                  <div className="route-badges">
+                    {awbRef && (
+                      <span className="reference-badge">#Reference: {awbRef}</span>
+                    )}
+                    {isChildPiece && parentAwb && (
+                      <span className="parent-awb-badge">
+                        <FaBoxes /> Child of: {parentAwb}
+                      </span>
+                    )}
+                    {hasChildren && (
+                      <button
+                        className="child-pieces-btn"
+                        onClick={() => setShowChildModal(true)}
+                        title="View child pieces"
+                      >
+                        <FaBoxes />
+                        <span>{childPieces.length} Child Pieces</span>
+                      </button>
+                    )}
+                    {delivery.length > 0 && (
+                      <StatusBadge status={delivery[0].status} />
+                    )}
+                  </div>
                 </div>
-                <div className={`step-connector ${activeStep >= 3 ? "completed" : ""}`} />
                 
-                <div className={`step-item ${activeStep >= 3 ? "completed" : ""} ${activeStep === 3 ? "active" : ""} ${isFailed && activeStep === 3 ? "failed" : ""}`}>
-                  <div className="step-icon">
-                    <Navigation size={20} />
+                <div className="route-visual">
+                  <div className="route-point">
+                    <div className="point-dot-wrapper origin">
+                      <MapPin size={24} />
+                    </div>
+                    <div className="point-info">
+                      <span className="point-label">Origin Hub</span>
+                      <span className="point-name">{booking !== "none" ? booking.booked_hub : "-"}</span>
+                    </div>
                   </div>
-                  <div className="step-label">{isFailed ? "Delivery Issue" : "Out For Delivery"}</div>
-                </div>
-                <div className={`step-connector ${activeStep >= 4 ? "completed" : ""} ${isFailed ? "failed" : ""}`} />
-                
-                <div className={`step-item ${activeStep >= 4 ? "completed" : ""} ${activeStep === 4 ? "active" : ""} ${isFailed ? "failed" : ""}`}>
-                  <div className="step-icon">
-                    {isFailed ? <XCircle size={20} /> : <CheckCircle size={20} />}
+                  
+                  <div className="route-line-wrapper">
+                    <div className={`route-line ${activeStep >= 4 ? "completed" : ""} ${isFailed ? "failed" : ""}`} />
+                    <div className={`route-vehicle ${activeStep >= 2 ? "moving" : ""} ${isFailed ? "failed" : ""}`}>
+                      <Truck size={22} />
+                    </div>
                   </div>
-                  <div className="step-label">{isFailed ? "Failed / RTO" : "Delivered"}</div>
+                  
+                  <div className="route-point">
+                    <div className="point-dot-wrapper destination">
+                      <MapPin size={24} />
+                    </div>
+                    <div className="point-info">
+                      <span className="point-label">Destination Hub</span>
+                      <span className="point-name">{booking !== "none" ? booking.destination : "-"}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Dynamic Visual Route Card */}
-            <div className="route-card info-card">
-              <div className="route-header">
-                <div className="route-awb-info">
-                  <span className="awb-label">AWB Number</span>
-                  <h2 className="awb-val">{isChildPiece && parentAwb ? awbno : awbNumber}</h2>
-                </div>
-                <div className="route-badges">
-                  {awbRef && (
-                    <span className="reference-badge">#Reference: {awbRef}</span>
-                  )}
-                  {isChildPiece && parentAwb && (
-                    <span className="parent-awb-badge">
-                      <FaBoxes /> Child of: {parentAwb}
-                    </span>
-                  )}
-                  {hasChildren && (
-                    <button
-                      className="child-pieces-btn"
-                      onClick={() => setShowChildModal(true)}
-                      title="View child pieces"
-                    >
-                      <FaBoxes />
-                      <span>{childPieces.length} Child Pieces</span>
-                    </button>
-                  )}
-                  {delivery.length > 0 && (
-                    <StatusBadge status={delivery[0].status} />
-                  )}
-                </div>
-              </div>
-              
-              <div className="route-visual">
-                <div className="route-point">
-                  <div className="point-dot-wrapper origin">
-                    <MapPin size={24} />
-                  </div>
-                  <div className="point-info">
-                    <span className="point-label">Origin Hub</span>
-                    <span className="point-name">{booking !== "none" ? booking.booked_hub : "-"}</span>
-                  </div>
-                </div>
-                
-                <div className="route-line-wrapper">
-                  <div className={`route-line ${activeStep >= 4 ? "completed" : ""} ${isFailed ? "failed" : ""}`} />
-                  <div className={`route-vehicle ${activeStep >= 2 ? "moving" : ""} ${isFailed ? "failed" : ""}`}>
-                    <Truck size={22} />
-                  </div>
-                </div>
-                
-                <div className="route-point">
-                  <div className="point-dot-wrapper destination">
-                    <MapPin size={24} />
-                  </div>
-                  <div className="point-info">
-                    <span className="point-label">Destination Hub</span>
-                    <span className="point-name">{booking !== "none" ? booking.destination : "-"}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Two Column Layout */}
-            <div className="two-column-layout">
-              {/* Left Column - Booking Details & Delivery Status */}
-              <div className="data-column">
-                {/* Booking Details Card */}
+            {/* Three Column Layout */}
+            <div className="three-column-layout">
+              {/* Column 1 - Shipment Details */}
+              <div className="details-column">
                 {booking !== "none" && (
                   <div className="info-card">
                     <div className="card-header">
                       <h3>Shipment Details</h3>
+                      <span className="header-awb-no">
+                        AWB No: {isChildPiece && parentAwb ? awbno : awbNumber}
+                      </span>
+                      {booking.date && (
+                        <span className="booking-date-header">
+                          Booking Date: {format(new Date(booking.date), "dd MMM yyyy")}
+                        </span>
+                      )}
                     </div>
                     <div className="card-body">
                       {/* Section 1: Route & Logistics */}
                       <div className="detail-section">
                         <h4 className="detail-section-title">Route & Logistics</h4>
-                        <div className="info-grid">
+                        <div className="info-grid route-grid">
                           <InfoItem
                             icon={<MapPin size={18} />}
                             label="Origin"
@@ -306,15 +369,6 @@ const Track = () => {
                             icon={<Navigation size={18} />}
                             label="Destination"
                             value={booking.destination}
-                          />
-                          <InfoItem
-                            icon={<Calendar size={18} />}
-                            label="Booking Date"
-                            value={
-                              booking.date
-                                ? format(new Date(booking.date), "dd MMM yyyy")
-                                : "-"
-                            }
                           />
                           {booking.reference && (
                             <InfoItem
@@ -353,70 +407,24 @@ const Track = () => {
                         </div>
                       </div>
 
-                      {/* Section 3: E-way Bill & Invoice Details */}
+                      {/* Section 3: E-way Bill & Invoice Details Button */}
                       {(booking.eway_bill_no || booking.invoice_no || booking.invoice_amount) && (
                         <div className="detail-section" style={{ paddingBottom: "0" }}>
-                          <h4 className="detail-section-title" style={{ marginTop: "8px" }}>E-way Bill & Invoice</h4>
-                          <div className="info-grid">
-                            {booking.eway_bill_no && (
-                              <InfoItem
-                                icon={<Package size={18} />}
-                                label="E-way Bill No"
-                                value={booking.eway_bill_no}
-                              />
-                            )}
-                            {booking.invoice_no && (
-                              <InfoItem
-                                icon={<Package size={18} />}
-                                label="Invoice No"
-                                value={booking.invoice_no}
-                              />
-                            )}
-                            {booking.invoice_date && (
-                              <InfoItem
-                                icon={<Calendar size={18} />}
-                                label="Invoice Date"
-                                value={
-                                  booking.invoice_date
-                                    ? format(new Date(booking.invoice_date), "dd MMM yyyy")
-                                    : "-"
-                                }
-                              />
-                            )}
-                            {booking.invoice_amount && (
-                              <InfoItem
-                                icon={<Weight size={18} />}
-                                label="Invoice Amount"
-                                value={`Rs. ${parseFloat(booking.invoice_amount).toFixed(2)}`}
-                              />
-                            )}
-                          </div>
+                          <button
+                            className="view-eway-modal-btn"
+                            onClick={() => setShowEwayModal(true)}
+                          >
+                            <FileText size={16} />
+                            <span>View E-way Bill & Invoice Details</span>
+                          </button>
                         </div>
                       )}
                     </div>
                   </div>
                 )}
-
-                {/* Delivery Status */}
-                {delivery.length > 0 && (
-                  <div className="info-card delivery-card">
-                    <div className="card-header">
-                      <h3>Delivery Status</h3>
-                    </div>
-                    <div className="card-body">
-                      {delivery.map((d, index) => (
-                        <DeliveryStatus
-                          key={index}
-                          delivery={d}
-                          onImageClick={setShowImage}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {/* Right Column - Tracking Timeline */}
+              {/* Column 2 - Tracking Timeline */}
               <div className="events-column">
                 <div className="info-card">
                   <div className="card-header">
@@ -542,6 +550,38 @@ const Track = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Column 3 - Delivery Status */}
+              <div className="delivery-column">
+                {delivery.length > 0 ? (
+                  <div className="info-card delivery-card">
+                    <div className="card-header">
+                      <h3>Delivery Status</h3>
+                    </div>
+                    <div className="card-body">
+                      {delivery.map((d, index) => (
+                        <DeliveryStatus
+                          key={index}
+                          delivery={d}
+                          onImageClick={setShowImage}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="info-card">
+                    <div className="card-header">
+                      <h3>Delivery Status</h3>
+                    </div>
+                    <div className="card-body">
+                      <div className="empty-state">
+                        <Clock size={48} />
+                        <p>No delivery updates available yet</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ) : (
@@ -611,6 +651,69 @@ const Track = () => {
         </div>
       )}
 
+      {/* E-way Bill Details Modal */}
+      {showEwayModal && (
+        <div
+          className="child-modal-overlay"
+          onClick={() => setShowEwayModal(false)}
+        >
+          <div className="child-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="child-modal-header">
+              <div className="child-modal-title">
+                <FileText size={22} style={{ color: "var(--primary)" }} />
+                <div>
+                  <h3>E-way Bill & Invoice Details</h3>
+                  <p>AWB Number: {isChildPiece && parentAwb ? awbno : awbNumber}</p>
+                </div>
+              </div>
+              <button
+                className="child-modal-close"
+                onClick={() => setShowEwayModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="child-modal-body">
+              <div className="info-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+                {booking.eway_bill_no && (
+                  <InfoItem
+                    icon={<Package size={18} />}
+                    label="E-way Bill No"
+                    value={booking.eway_bill_no}
+                  />
+                )}
+                {booking.invoice_no && (
+                  <InfoItem
+                    icon={<Package size={18} />}
+                    label="Invoice No"
+                    value={booking.invoice_no}
+                  />
+                )}
+                {booking.invoice_date && (
+                  <InfoItem
+                    icon={<Calendar size={18} />}
+                    label="Invoice Date"
+                    value={
+                      booking.invoice_date
+                        ? format(new Date(booking.invoice_date), "dd MMM yyyy")
+                        : "-"
+                    }
+                  />
+                )}
+                {booking.invoice_amount && (
+                  <InfoItem
+                    icon={<Weight size={18} />}
+                    label="Invoice Amount"
+                    value={`Rs. ${parseFloat(booking.invoice_amount).toFixed(2)}`}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Image Modal */}
       {showImage && (
         <div className="image-modal" onClick={() => setShowImage(null)}>
@@ -629,7 +732,7 @@ const InfoItem = ({ icon, label, value }) => (
   <div className="info-item">
     <div className="info-icon">{icon}</div>
     <div className="info-content">
-      <span className="info-label">{label}</span>
+      <span className="info-label">{label}:</span>
       <span className="info-value">{value || "-"}</span>
     </div>
   </div>
