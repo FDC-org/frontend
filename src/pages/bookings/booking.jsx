@@ -11,8 +11,11 @@ import {
   MdDescription,
   MdLocalShipping,
   MdClose,
+  MdDashboard,
+  MdDateRange,
+  MdLock,
 } from "react-icons/md";
-import { FaBoxes } from "react-icons/fa";
+import { FaBoxes, FaBarcode, FaArrowRight, FaPlane, FaTruck, FaFileInvoice, FaWeightHanging, FaListAlt } from "react-icons/fa";
 import "./booking.css";
 
 const Booking = () => {
@@ -36,13 +39,37 @@ const Booking = () => {
     contents: "",
     pincode: "",
     reference: "",
+    courier_charges: "",
+    gst: "",
+    packing_charges: "",
+    freight_charges: "",
+    others: "",
   });
+
+  const courierVal = parseFloat(formData.courier_charges) || 0;
+  const packingVal = parseFloat(formData.packing_charges) || 0;
+  const freightVal = parseFloat(formData.freight_charges) || 0;
+  const othersVal = parseFloat(formData.others) || 0;
+
+  const calculatedGst = ((courierVal + packingVal + freightVal + othersVal) * 0.18).toFixed(2);
+
+  const calculatedTotal = (
+    courierVal +
+    packingVal +
+    freightVal +
+    othersVal +
+    parseFloat(calculatedGst)
+  ).toFixed(2);
 
   const [destinations, setDestinations] = useState([]);
   const [recentBookings, setRecentBookings] = useState([]);
   const [loadingDest, setLoadingDest] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [toast, setToast] = useState(null);
+
+  const [bookingType, setBookingType] = useState("retail"); // "retail" or "credit"
+  const [clients, setClients] = useState([]);
+  const [selectedClientCode, setSelectedClientCode] = useState("");
 
   // Child pieces modal
   const [showChildModal, setShowChildModal] = useState(false);
@@ -69,6 +96,7 @@ const Booking = () => {
     }
 
     fetchDestinations();
+    fetchClients();
   }, [navigate]);
 
   const fetchDestinations = async () => {
@@ -87,6 +115,17 @@ const Booking = () => {
     }
   };
 
+  const fetchClients = async () => {
+    try {
+      const res = await axiosInstance.get("clients/");
+      if (res.data.status === "success") {
+        setClients(res.data.data || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch clients:", err);
+    }
+  };
+
   const showToast = (message, type = "info") => {
     setToast({ message, type });
   };
@@ -94,6 +133,36 @@ const Booking = () => {
   const handleKeyDown = (e, index) => {
     if (e.key === "Enter") {
       e.preventDefault();
+
+      if (index === 7) { // Enter from Mode -> go to Contents Description
+        inputRefs.current[20]?.focus();
+        return;
+      }
+
+      if (index === 20) { // Enter from Contents Description
+        if (bookingType === "credit") {
+          inputRefs.current[14]?.focus();
+        } else {
+          inputRefs.current[8]?.focus();
+        }
+        return;
+      }
+
+      if (index === 14) { // Enter from Client Select
+        inputRefs.current[11]?.focus();
+        return;
+      }
+
+      if (index === 13) { // Enter from Receiver Address
+        inputRefs.current[15]?.focus();
+        return;
+      }
+
+      if (index === 18) { // Enter from Others (last editable billing field) -> Submit
+        handleSubmit();
+        return;
+      }
+
       const nextInput = inputRefs.current[index + 1];
       if (nextInput) {
         nextInput.focus();
@@ -145,9 +214,49 @@ const Booking = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleClientChange = (e) => {
+    const clientCode = e.target.value;
+    setSelectedClientCode(clientCode);
+
+    if (clientCode) {
+      const client = clients.find((c) => c.client_code === clientCode);
+      if (client) {
+        setFormData((prev) => ({
+          ...prev,
+          sendername: client.name,
+          senderphone: client.phone_number,
+          senderaddress: client.address,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        sendername: "",
+        senderphone: "",
+        senderaddress: "",
+      }));
+    }
+  };
+
+  const handleBookingTypeChange = (type) => {
+    setBookingType(type);
+    setSelectedClientCode("");
+    setFormData((prev) => ({
+      ...prev,
+      sendername: "",
+      senderphone: "",
+      senderaddress: "",
+    }));
+  };
+
   const validate = () => {
     if (formData.awbno.length !== 10) {
       showToast("AWB number must be exactly 10 digits", "error");
+      return false;
+    }
+
+    if (bookingType === "credit" && !selectedClientCode) {
+      showToast("Please select a client for credit booking", "error");
       return false;
     }
 
@@ -250,6 +359,10 @@ const Booking = () => {
     try {
       const bookingData = {
         ...formData,
+        gst: calculatedGst,
+        total: calculatedTotal,
+        booking_type: bookingType,
+        client_code: selectedClientCode,
         child_pieces_start: childStart,
         eway_bill_no: ewayFields ? ewayFields.eway_bill_no : "",
         invoice_no: ewayFields ? ewayFields.invoice_no : "",
@@ -293,6 +406,12 @@ const Booking = () => {
           pcs: formData.doc_type === "docx" ? "1" : "",
           wt: formData.doc_type === "docx" ? "0.250" : "",
           reference: "",
+          contents: "",
+          courier_charges: "",
+          gst: "",
+          packing_charges: "",
+          freight_charges: "",
+          others: "",
         }));
 
         // Focus on AWB input
@@ -330,356 +449,680 @@ const Booking = () => {
     );
   }
 
+  const todayStats = {
+    count: recentBookings.length,
+    pcs: recentBookings.reduce((sum, b) => sum + (parseInt(b.pcs) || 0), 0),
+    weight: recentBookings.reduce((sum, b) => sum + (parseFloat(b.wt) || 0), 0).toFixed(3)
+  };
+
+  const selectedDestName = destinations.find(
+    (d) => d.code === formData.destination_code
+  )?.name || "";
+
   return (
     <div className="booking">
       <div className="booking__container">
+        
+        {/* Modern Header Banner */}
         <header className="booking__header">
-          <div>
-            <h1 className="booking__title">Retail Booking</h1>
-            <p className="booking__subtitle">Create a new shipment booking</p>
+          <div className="header-left">
+            <h1 className="booking__title">
+              {bookingType === "credit" ? "Credit Booking" : "Retail Booking"}
+            </h1>
+            <p className="booking__subtitle">Create and manage shipment bookings instantly</p>
           </div>
-          <div className="form-field">
-            <label htmlFor="date" className="form-field__label">
-              Date
-            </label>
-            <input
-              id="date"
-              name="date"
-              type="date"
-              className="form-field__input"
-              value={formData.date}
-              onChange={handleChange}
-              ref={(el) => (inputRefs.current[1] = el)}
-              onKeyDown={(e) => handleKeyDown(e, 1)}
-            />
+          
+          <div className="header-right">
+            {/* Booking Type Toggle */}
+            <div className="booking__type-toggle-group">
+              <button
+                type="button"
+                className={`toggle-btn ${bookingType === "retail" ? "active" : ""}`}
+                onClick={() => handleBookingTypeChange("retail")}
+              >
+                Retail
+              </button>
+              <button
+                type="button"
+                className={`toggle-btn ${bookingType === "credit" ? "active" : ""}`}
+                onClick={() => handleBookingTypeChange("credit")}
+              >
+                Credit
+              </button>
+            </div>
+
+            <div className="date-badge">
+              <MdDateRange className="badge-icon" />
+              <div className="date-badge-content">
+                <span className="badge-label">Booking Date</span>
+                <input
+                  id="date"
+                  name="date"
+                  type="date"
+                  className="header-date-input"
+                  value={formData.date}
+                  onChange={handleChange}
+                  ref={(el) => (inputRefs.current[1] = el)}
+                  onKeyDown={(e) => handleKeyDown(e, 1)}
+                />
+              </div>
+            </div>
           </div>
         </header>
 
-        <form className="booking__form" onSubmit={(e) => e.preventDefault()}>
-          {/* Document Details */}
-          <section className="booking__section">
-            <h2 className="booking__section-title">
-              <MdDescription />
-              Document Details
-            </h2>
-            <div className="booking__grid booking__grid--3">
-              <div className="form-field">
-                <label htmlFor="awbno" className="form-field__label">
-                  AWB Number <span className="required">*</span>
-                </label>
-                <input
-                  id="awbno"
-                  name="awbno"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Enter 10-digit AWB"
-                  value={formData.awbno}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[0] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 0)}
-                  maxLength={10}
-                  autoFocus
-                />
+        {/* Dashboard Stats Panel */}
+        {recentBookings.length > 0 && (
+          <div className="booking__stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon-wrapper count">
+                <FaListAlt />
               </div>
-
-              <div className="form-field">
-                <label htmlFor="destination" className="form-field__label">
-                  Destination <span className="required">*</span>
-                </label>
-                <select
-                  id="destination"
-                  name="destination_code"
-                  className="form-field__select"
-                  value={formData.destination_code}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[2] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 2)}
-                >
-                  <option value="">Select destination</option>
-                  {destinations.map((dest) => (
-                    <option key={dest.code} value={dest.code}>
-                      {dest.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="reference" className="form-field__label">
-                  Reference Number
-                </label>
-                <input
-                  id="reference"
-                  name="reference"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Reference number (optional)"
-                  value={formData.reference}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[3] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 3)}
-                />
-              </div>
-
-              <div className="form-field form-field--checkbox-container">
-                <label className="form-field__checkbox-label">
-                  <input
-                    type="checkbox"
-                    className="form-field__checkbox-input"
-                    checked={hasEwayBill}
-                    onChange={(e) => setHasEwayBill(e.target.checked)}
-                  />
-                  <span className="checkbox-text">E-way Bill</span>
-                </label>
+              <div className="stat-info">
+                <span className="stat-title">Recent Bookings</span>
+                <span className="stat-value">{todayStats.count}</span>
               </div>
             </div>
-          </section>
-
-          {/* Service Details */}
-          <section className="booking__section">
-            <h2 className="booking__section-title">
-              <MdLocalShipping />
-              Service Details
-            </h2>
-            <div className="booking__grid booking__grid--4">
-              <div className="form-field">
-                <label htmlFor="doc_type" className="form-field__label">
-                  Type <span className="required">*</span>
-                </label>
-                <select
-                  id="doc_type"
-                  name="doc_type"
-                  className="form-field__select"
-                  value={formData.doc_type}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[4] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 4)}
-                >
-                  <option value="">Select type</option>
-                  <option value="docx">DOX</option>
-                  <option value="nondocx">NON DOX</option>
-                </select>
+            <div className="stat-card">
+              <div className="stat-icon-wrapper pcs">
+                <FaBoxes />
               </div>
-              <div className="form-field">
-                <label htmlFor="pcs" className="form-field__label">
-                  Pieces <span className="required">*</span>
-                </label>
-                <input
-                  id="pcs"
-                  name="pcs"
-                  type="number"
-                  className="form-field__input"
-                  placeholder="0"
-                  value={formData.pcs}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[6] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 6)}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="wt" className="form-field__label">
-                  Weight (kg) <span className="required">*</span>
-                </label>
-                <input
-                  id="wt"
-                  name="wt"
-                  type="number"
-                  step="0.001"
-                  className="form-field__input"
-                  placeholder="0.000"
-                  value={formData.wt}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[5] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 5)}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="mode" className="form-field__label">
-                  Mode <span className="required">*</span>
-                </label>
-                <select
-                  id="mode"
-                  name="mode"
-                  className="form-field__select"
-                  value={formData.mode}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[7] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 7)}
-                >
-                  <option value="">Select mode</option>
-                  <option value="SURFACE">SURFACE</option>
-                  <option value="AIR">AIR</option>
-                </select>
+              <div className="stat-info">
+                <span className="stat-title">Total Pieces</span>
+                <span className="stat-value">{todayStats.pcs}</span>
               </div>
             </div>
-
-            <div className="booking__grid booking__grid--1">
-              <div className="form-field">
-                <label htmlFor="contents" className="form-field__label">
-                  Contents Description
-                </label>
-                <textarea
-                  id="contents"
-                  name="contents"
-                  className="form-field__textarea"
-                  placeholder="Describe package contents"
-                  value={formData.contents}
-                  onChange={handleChange}
-                  rows={3}
-                />
+            <div className="stat-card">
+              <div className="stat-icon-wrapper weight">
+                <FaWeightHanging />
+              </div>
+              <div className="stat-info">
+                <span className="stat-title">Total Weight</span>
+                <span className="stat-value">{todayStats.weight} kg</span>
               </div>
             </div>
-          </section>
-
-          {/* Sender Details */}
-          <section className="booking__section">
-            <h2 className="booking__section-title">
-              <MdPerson />
-              Sender Details
-            </h2>
-            <div className="booking__grid booking__grid--3">
-              <div className="form-field">
-                <label htmlFor="sendername" className="form-field__label">
-                  Name <span className="required">*</span>
-                </label>
-                <input
-                  id="sendername"
-                  name="sendername"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Sender name"
-                  value={formData.sendername}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[8] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 8)}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="senderaddress" className="form-field__label">
-                  Address
-                </label>
-                <input
-                  id="senderaddress"
-                  name="senderaddress"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Sender address"
-                  value={formData.senderaddress}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[10] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 10)}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="senderphone" className="form-field__label">
-                  Phone
-                </label>
-                <input
-                  id="senderphone"
-                  name="senderphone"
-                  type="tel"
-                  className="form-field__input"
-                  placeholder="10-digit phone"
-                  value={formData.senderphone}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[9] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 9)}
-                  maxLength={10}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Receiver Details */}
-          <section className="booking__section">
-            <h2 className="booking__section-title">
-              <MdLocationOn />
-              Receiver Details
-            </h2>
-            <div className="booking__grid booking__grid--3">
-              <div className="form-field">
-                <label htmlFor="receivername" className="form-field__label">
-                  Name <span className="required">*</span>
-                </label>
-                <input
-                  id="receivername"
-                  name="receivername"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Receiver name"
-                  value={formData.receivername}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[11] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 11)}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="receiveraddress" className="form-field__label">
-                  Address
-                </label>
-                <input
-                  id="receiveraddress"
-                  name="receiveraddress"
-                  type="text"
-                  className="form-field__input"
-                  placeholder="Receiver address"
-                  value={formData.receiveraddress}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[13] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 13)}
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="receiverphone" className="form-field__label">
-                  Phone
-                </label>
-                <input
-                  id="receiverphone"
-                  name="receiverphone"
-                  type="tel"
-                  className="form-field__input"
-                  placeholder="10-digit phone"
-                  value={formData.receiverphone}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[12] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 12)}
-                  maxLength={10}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Submit Button */}
-          <div className="booking__actions">
-            <button
-              type="button"
-              className="booking__button booking__button--primary"
-              onClick={handleSubmit}
-              disabled={submitLoading}
-            >
-              {submitLoading ? (
-                <>
-                  <Spinner size="sm" color="white" />
-                  <span>Creating Booking...</span>
-                </>
-              ) : (
-                "Confirm Booking"
-              )}
-            </button>
           </div>
-        </form>
+        )}
 
-        {/* Recent Bookings */}
+        {/* Two-column responsive layout */}
+        <div className="booking__layout">
+          
+          {/* Left Column: Form Details (Single Screen Compact Layout) */}
+          <div className="booking__form-side">
+            <form className="booking__form" onSubmit={(e) => e.preventDefault()}>
+              
+              <div className="compact-booking-card">
+                
+                {/* Section 1: Document Details */}
+                <div className="compact-section">
+                  <h3 className="compact-section-title">
+                    <MdDescription className="section-icon" />
+                    <span>Document Details</span>
+                  </h3>
+                  <div className="booking__form-grid booking__form-grid--document">
+                    
+                    <div className="form-field">
+                      <label htmlFor="awbno" className="form-field__label">
+                        AWB Number <span className="required">*</span>
+                      </label>
+                      <div className="input-with-icon">
+                        <FaBarcode className="input-field-icon" />
+                        <input
+                          id="awbno"
+                          name="awbno"
+                          type="text"
+                          className="form-field__input"
+                          placeholder="AWB"
+                          value={formData.awbno}
+                          onChange={handleChange}
+                          ref={(el) => (inputRefs.current[0] = el)}
+                          onKeyDown={(e) => handleKeyDown(e, 0)}
+                          maxLength={10}
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="destination" className="form-field__label">
+                        Destination <span className="required">*</span>
+                      </label>
+                      <select
+                        id="destination"
+                        name="destination_code"
+                        className="form-field__select"
+                        value={formData.destination_code}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[2] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 2)}
+                      >
+                        <option value="">Select</option>
+                        {destinations.map((dest) => (
+                          <option key={dest.code} value={dest.code}>
+                            {dest.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="reference" className="form-field__label">
+                        Reference Number
+                      </label>
+                      <input
+                        id="reference"
+                        name="reference"
+                        type="text"
+                        className="form-field__input"
+                        placeholder="Reference (opt)"
+                        value={formData.reference}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[3] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 3)}
+                      />
+                    </div>
+
+                    <div className="form-field checkbox-field-container">
+                      <label className="form-field__label">E-way Bill</label>
+                      <label className="checkbox-label-styled compact-switch">
+                        <input
+                          type="checkbox"
+                          className="checkbox-input-hidden"
+                          checked={hasEwayBill}
+                          onChange={(e) => setHasEwayBill(e.target.checked)}
+                        />
+                        <span className="checkbox-custom-switch"></span>
+                      </label>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Section 2: Service Details */}
+                <div className="compact-section">
+                  <h3 className="compact-section-title">
+                    <MdLocalShipping className="section-icon" />
+                    <span>Service Details</span>
+                  </h3>
+                  <div className="booking__form-grid booking__form-grid--service">
+
+                    <div className="form-field">
+                      <label htmlFor="doc_type" className="form-field__label">
+                        Type <span className="required">*</span>
+                      </label>
+                      <select
+                        id="doc_type"
+                        name="doc_type"
+                        className="form-field__select"
+                        value={formData.doc_type}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[4] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 4)}
+                      >
+                        <option value="">Select</option>
+                        <option value="docx">DOX</option>
+                        <option value="nondocx">NON DOX</option>
+                      </select>
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="wt" className="form-field__label">
+                        Weight (kg) <span className="required">*</span>
+                      </label>
+                      <input
+                        id="wt"
+                        name="wt"
+                        type="number"
+                        step="0.001"
+                        className="form-field__input"
+                        placeholder="0.000"
+                        value={formData.wt}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[5] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 5)}
+                        min="0.001"
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="pcs" className="form-field__label">
+                        Pieces <span className="required">*</span>
+                      </label>
+                      <input
+                        id="pcs"
+                        name="pcs"
+                        type="number"
+                        className="form-field__input"
+                        placeholder="Pcs"
+                        value={formData.pcs}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[6] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 6)}
+                        min="1"
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="mode" className="form-field__label">
+                        Mode <span className="required">*</span>
+                      </label>
+                      <select
+                        id="mode"
+                        name="mode"
+                        className="form-field__select"
+                        value={formData.mode}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[7] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 7)}
+                      >
+                        <option value="">Select</option>
+                        <option value="SURFACE">SURFACE</option>
+                        <option value="AIR">AIR</option>
+                      </select>
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="contents" className="form-field__label">
+                        Contents Description
+                      </label>
+                      <input
+                        id="contents"
+                        name="contents"
+                        type="text"
+                        className="form-field__input"
+                        placeholder="Package contents description..."
+                        value={formData.contents}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[20] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 20)}
+                      />
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Section 2: Sender Details */}
+                <div className="compact-section">
+                  <h3 className="compact-section-title">
+                    <MdPerson className="section-icon" />
+                    <span>Sender Details</span>
+                    {bookingType === "credit" && (
+                      <span className="locked-badge compact">
+                        <MdLock className="badge-icon" /> Locked (Credit Client)
+                      </span>
+                    )}
+                  </h3>
+                  <div className={`booking__form-grid booking__form-grid--sender ${bookingType === "credit" ? "credit-grid" : "retail-grid"}`}>
+                    
+                    {bookingType === "credit" && (
+                      <div className="form-field">
+                        <label htmlFor="clientSelect" className="form-field__label">
+                          Select Client <span className="required">*</span>
+                        </label>
+                        <select
+                          id="clientSelect"
+                          name="clientSelect"
+                          className="form-field__select"
+                          value={selectedClientCode}
+                          onChange={handleClientChange}
+                          ref={(el) => (inputRefs.current[14] = el)}
+                          onKeyDown={(e) => handleKeyDown(e, 14)}
+                        >
+                          <option value="">Select a client</option>
+                          {clients.map((client) => (
+                            <option key={client.client_code} value={client.client_code}>
+                              {client.name} ({client.client_code})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="form-field">
+                      <label htmlFor="sendername" className="form-field__label">
+                        Name <span className="required">*</span>
+                      </label>
+                      <input
+                        id="sendername"
+                        name="sendername"
+                        type="text"
+                        className="form-field__input"
+                        placeholder={bookingType === "credit" ? "Select client" : "Sender's full name"}
+                        value={formData.sendername}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[8] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 8)}
+                        readOnly={bookingType === "credit"}
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="senderphone" className="form-field__label">
+                        Phone Number
+                      </label>
+                      <div className="input-with-icon">
+                        <span className="input-prefix-icon"><MdPhone /></span>
+                        <input
+                          id="senderphone"
+                          name="senderphone"
+                          type="tel"
+                          className="form-field__input with-prefix"
+                          placeholder={bookingType === "credit" ? "Select client" : "10-digit number"}
+                          value={formData.senderphone}
+                          onChange={handleChange}
+                          ref={(el) => (inputRefs.current[9] = el)}
+                          onKeyDown={(e) => handleKeyDown(e, 9)}
+                          maxLength={10}
+                          readOnly={bookingType === "credit"}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-field sender-address-field">
+                      <label htmlFor="senderaddress" className="form-field__label">
+                        Address
+                      </label>
+                      <input
+                        id="senderaddress"
+                        name="senderaddress"
+                        type="text"
+                        className="form-field__input"
+                        placeholder={bookingType === "credit" ? "Select client" : "Sender's street address, area"}
+                        value={formData.senderaddress}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[10] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 10)}
+                        readOnly={bookingType === "credit"}
+                      />
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Section 3: Receiver Details */}
+                <div className="compact-section">
+                  <h3 className="compact-section-title">
+                    <MdLocationOn className="section-icon" />
+                    <span>Receiver Details</span>
+                  </h3>
+                  <div className="booking__form-grid booking__form-grid--receiver">
+                    
+                    <div className="form-field">
+                      <label htmlFor="receivername" className="form-field__label">
+                        Name <span className="required">*</span>
+                      </label>
+                      <input
+                        id="receivername"
+                        name="receivername"
+                        type="text"
+                        className="form-field__input"
+                        placeholder="Receiver's full name"
+                        value={formData.receivername}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[11] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 11)}
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="receiverphone" className="form-field__label">
+                        Phone Number
+                      </label>
+                      <div className="input-with-icon">
+                        <span className="input-prefix-icon"><MdPhone /></span>
+                        <input
+                          id="receiverphone"
+                          name="receiverphone"
+                          type="tel"
+                          className="form-field__input with-prefix"
+                          placeholder="10-digit number"
+                          value={formData.receiverphone}
+                          onChange={handleChange}
+                          ref={(el) => (inputRefs.current[12] = el)}
+                          onKeyDown={(e) => handleKeyDown(e, 12)}
+                          maxLength={10}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-field receiver-address-field">
+                      <label htmlFor="receiveraddress" className="form-field__label">
+                        Address
+                      </label>
+                      <input
+                        id="receiveraddress"
+                        name="receiveraddress"
+                        type="text"
+                        className="form-field__input"
+                        placeholder="Receiver's street address, city, destination"
+                        value={formData.receiveraddress}
+                        onChange={handleChange}
+                        ref={(el) => (inputRefs.current[13] = el)}
+                        onKeyDown={(e) => handleKeyDown(e, 13)}
+                      />
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          {/* Right Column: Dynamic Label Preview & Sticky Submission Summary */}
+          <div className="booking__sidebar-side">
+            <div className="sticky-sidebar-container">
+              
+              {/* Dynamic Shipping Slip Preview Card */}
+              <div className="preview-label-card">
+                <div className="preview-label-header">
+                  <div className="preview-brand">FDC CARGO & COURIERS</div>
+                  <div className="preview-badge-type">
+                    {formData.doc_type === "docx" ? "DOX" : formData.doc_type === "nondocx" ? "PARCEL" : "SHIPMENT"}
+                  </div>
+                </div>
+
+                <div className="preview-barcode-section">
+                  {formData.awbno ? (
+                    <>
+                      <div className="barcode-mock-bars"></div>
+                      <div className="barcode-mock-number">{formData.awbno}</div>
+                    </>
+                  ) : (
+                    <div className="barcode-placeholder">AWB Barcode Auto-Preview</div>
+                  )}
+                </div>
+
+                <div className="preview-route-banner">
+                  <span className="route-point active">
+                    {(localStorage.getItem("hubname") || "ORIGIN").toUpperCase()}
+                  </span>
+                  <FaArrowRight className="route-arrow" />
+                  <span className="route-point active">
+                    {selectedDestName ? selectedDestName.toUpperCase() : "DESTINATION"}
+                  </span>
+                </div>
+
+                <div className="preview-details-grid">
+                  <div className="details-col">
+                    <div className="detail-item">
+                      <span className="detail-label">SENDER</span>
+                      <span className="detail-value">{formData.sendername || "---"}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">MODE</span>
+                      <span className="detail-value">
+                        {formData.mode === "AIR" ? (
+                          <span className="mode-with-icon"><FaPlane /> AIR</span>
+                        ) : formData.mode === "SURFACE" ? (
+                          <span className="mode-with-icon"><FaTruck /> SURFACE</span>
+                        ) : "---"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="details-col">
+                    <div className="detail-item">
+                      <span className="detail-label">RECEIVER</span>
+                      <span className="detail-value">{formData.receivername || "---"}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">SPECS</span>
+                      <span className="detail-value">
+                        {formData.pcs || 0} Pcs / {formData.wt || "0.000"} kg
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {hasEwayBill && (
+                  <div className="preview-eway-indicator">
+                    <FaFileInvoice className="indicator-icon" />
+                    <span>E-way Bill Details Required on Confirm</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Billing Details Card */}
+              <div className="booking__card billing-card">
+                <h2 className="booking__section-title">
+                  <FaFileInvoice className="section-icon" />
+                  <span>Billing Details</span>
+                </h2>
+                <div className="billing-grid">
+                  <div className="form-field">
+                    <label htmlFor="courier_charges" className="form-field__label">
+                      Courier Charges
+                    </label>
+                    <input
+                      id="courier_charges"
+                      name="courier_charges"
+                      type="number"
+                      step="0.01"
+                      className="form-field__input"
+                      placeholder="0.00"
+                      value={formData.courier_charges}
+                      onChange={handleChange}
+                      ref={(el) => (inputRefs.current[15] = el)}
+                      onKeyDown={(e) => handleKeyDown(e, 15)}
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="packing_charges" className="form-field__label">
+                      Packing Charges
+                    </label>
+                    <input
+                      id="packing_charges"
+                      name="packing_charges"
+                      type="number"
+                      step="0.01"
+                      className="form-field__input"
+                      placeholder="0.00"
+                      value={formData.packing_charges}
+                      onChange={handleChange}
+                      ref={(el) => (inputRefs.current[16] = el)}
+                      onKeyDown={(e) => handleKeyDown(e, 16)}
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="freight_charges" className="form-field__label">
+                      Freight Charges
+                    </label>
+                    <input
+                      id="freight_charges"
+                      name="freight_charges"
+                      type="number"
+                      step="0.01"
+                      className="form-field__input"
+                      placeholder="0.00"
+                      value={formData.freight_charges}
+                      onChange={handleChange}
+                      ref={(el) => (inputRefs.current[17] = el)}
+                      onKeyDown={(e) => handleKeyDown(e, 17)}
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="others" className="form-field__label">
+                      Others
+                    </label>
+                    <input
+                      id="others"
+                      name="others"
+                      type="number"
+                      step="0.01"
+                      className="form-field__input"
+                      placeholder="0.00"
+                      value={formData.others}
+                      onChange={handleChange}
+                      ref={(el) => (inputRefs.current[18] = el)}
+                      onKeyDown={(e) => handleKeyDown(e, 18)}
+                    />
+                  </div>
+
+                  <div className="form-field gst-field">
+                    <label htmlFor="gst" className="form-field__label">
+                      GST (18%)
+                    </label>
+                    <input
+                      id="gst"
+                      name="gst"
+                      type="number"
+                      className="form-field__input"
+                      value={calculatedGst}
+                      readOnly
+                    />
+                  </div>
+
+                  <div className="form-field total-field">
+                    <label htmlFor="total" className="form-field__label total-label">
+                      Total Amount
+                    </label>
+                    <input
+                      id="total"
+                      name="total"
+                      type="number"
+                      className="form-field__input total-input"
+                      value={calculatedTotal}
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar Action Card */}
+              <div className="sidebar-action-card">
+                <button
+                  type="button"
+                  className="booking-action-btn-primary"
+                  onClick={handleSubmit}
+                  disabled={submitLoading}
+                >
+                  {submitLoading ? (
+                    <>
+                      <Spinner size="sm" color="white" />
+                      <span>Booking in progress...</span>
+                    </>
+                  ) : (
+                    "Confirm & Create Booking"
+                  )}
+                </button>
+                <p className="sidebar-disclaimer">
+                  * Verify all details before confirming. Fields marked with <span className="required">*</span> are mandatory.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Bookings Section */}
         {recentBookings.length > 0 && (
           <section className="booking__recent">
             <div className="booking__recent-header">
-              <h2 className="booking__section-title">Recent Bookings</h2>
+              <h2 className="booking__section-title">
+                <FaListAlt className="section-icon" />
+                <span>Recent Bookings</span>
+              </h2>
               <button className="booking__view-all" onClick={handleViewAll}>
                 View All
               </button>
@@ -752,7 +1195,7 @@ const Booking = () => {
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <div className="popup-header">
               <h3 className="popup-title">
-                <FaBoxes />
+                <FaFileInvoice />
                 E-way Bill Details
               </h3>
               <button
@@ -769,7 +1212,7 @@ const Booking = () => {
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="Enter 10-digit/alpha E-way Bill Number"
+                  placeholder="Enter 12-digit E-way Bill Number"
                   value={ewayData.eway_bill_no}
                   onChange={(e) => setEwayData(prev => ({ ...prev, eway_bill_no: e.target.value }))}
                   autoFocus

@@ -19,6 +19,7 @@ import CreateDRS from "./drs/drs.jsx";
 import AllBookings from "./bookings/view_bookings.jsx";
 import Booking from "./bookings/booking.jsx";
 import DeliveryUpdate from "./delivery/delivery.jsx";
+import Clients from "./settings/clients.jsx";
 
 const PageRoutes = () => {
   return (
@@ -35,6 +36,7 @@ const PageRoutes = () => {
         <Route path="/drs" element={<CreateDRS />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/booking/view" element={<AllBookings />} />
+        <Route path="/settings/clients" element={<Clients />} />
         <Route
           path="/manifest/:manifestnumber"
           element={<ManifestByNumber />}
