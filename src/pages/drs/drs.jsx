@@ -254,12 +254,27 @@ const CreateDRS = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  // ---------------- PDF ACTIONS ----------------
   const handleViewPDF = async (url, drsno) => {
     try {
       if (url) {
-        window.open(url, "_blank", "noopener,noreferrer");
-        return;
+        try {
+          setDrsLoading(true);
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const rawBlob = await response.blob();
+          // Explicitly set MIME type to application/pdf so browser displays inline
+          const blob = new Blob([rawBlob], { type: "application/pdf" });
+          const pdfUrl = window.URL.createObjectURL(blob);
+          window.open(pdfUrl, "_blank", "noopener,noreferrer");
+          setTimeout(() => window.URL.revokeObjectURL(pdfUrl), 100);
+          return;
+        } catch (fetchError) {
+          console.warn("Failed to view directly from Cloudinary URL, falling back to backend view:", fetchError);
+        } finally {
+          setDrsLoading(false);
+        }
       }
 
       setDrsLoading(true);
@@ -285,13 +300,26 @@ const CreateDRS = () => {
   const handleDownloadPDF = async (url, drsno) => {
     try {
       if (url) {
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `DRS_${drsno}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        return;
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const blob = await response.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+
+          const link = document.createElement("a");
+          link.href = downloadUrl;
+          link.download = `DRS_${drsno}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          window.URL.revokeObjectURL(downloadUrl);
+          return;
+        } catch (fetchError) {
+          console.warn("Failed to download directly from Cloudinary URL, falling back to backend download:", fetchError);
+        }
       }
 
       const response = await axiosInstance.get(`drs/download/${drsno}/`, {
