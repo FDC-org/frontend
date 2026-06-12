@@ -7,6 +7,7 @@ import {
   MdLogout,
   MdDescription,
   MdLocalShipping,
+  MdSettings,
 } from "react-icons/md";
 import "./quickmenubar.css";
 import { FaUser } from "react-icons/fa";
@@ -72,6 +73,14 @@ const QuickMenuBar = () => {
       label: "DRS",
       icon: MdLocalShipping,
       path: "/drs",
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: MdSettings,
+      dropdown: [
+        { label: "Clients", path: "/settings/clients" },
+      ],
     },
     {
       id: "profile",
