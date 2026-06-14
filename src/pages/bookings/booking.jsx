@@ -44,6 +44,7 @@ const Booking = () => {
     packing_charges: "",
     freight_charges: "",
     others: "",
+    volumetric_weight: "",
   });
 
   const courierVal = parseFloat(formData.courier_charges) || 0;
@@ -87,6 +88,16 @@ const Booking = () => {
     invoice_no: "",
     invoice_date: "",
     invoice_amount: "",
+  });
+
+  // Volumetric weight calculator states
+  const [hasVolumetricWeight, setHasVolumetricWeight] = useState(false);
+  const [showVolumetricPopup, setShowVolumetricPopup] = useState(false);
+  const [volumetricData, setVolumetricData] = useState({
+    height: "",
+    width: "",
+    breadth: "",
+    divisorType: "surface",
   });
 
   useEffect(() => {
@@ -133,6 +144,11 @@ const Booking = () => {
   const handleKeyDown = (e, index) => {
     if (e.key === "Enter") {
       e.preventDefault();
+
+      if (index === 0) { // Enter from AWB -> skip disabled Date and go to Destination
+        inputRefs.current[2]?.focus();
+        return;
+      }
 
       if (index === 7) { // Enter from Mode -> go to Contents Description
         inputRefs.current[20]?.focus();
@@ -344,6 +360,48 @@ const Booking = () => {
     }
   };
 
+  const getDivisorValue = (type) => {
+    if (type === "air") return 3000;
+    if (type === "logistics") return 4000;
+    return 5000; // surface
+  };
+
+  const calculateVolumetricWeight = () => {
+    const h = parseFloat(volumetricData.height) || 0;
+    const w = parseFloat(volumetricData.width) || 0;
+    const b = parseFloat(volumetricData.breadth) || 0;
+    const div = getDivisorValue(volumetricData.divisorType);
+    return ((h * w * b) / div).toFixed(3);
+  };
+
+  const handleVolumetricPopupConfirm = () => {
+    if (!volumetricData.height || parseFloat(volumetricData.height) <= 0) {
+      showToast("Please enter a valid height", "error");
+      return;
+    }
+    if (!volumetricData.width || parseFloat(volumetricData.width) <= 0) {
+      showToast("Please enter a valid width", "error");
+      return;
+    }
+    if (!volumetricData.breadth || parseFloat(volumetricData.breadth) <= 0) {
+      showToast("Please enter a valid breadth", "error");
+      return;
+    }
+
+    const calculatedWt = calculateVolumetricWeight();
+    setFormData((prev) => ({ ...prev, volumetric_weight: calculatedWt }));
+    setShowVolumetricPopup(false);
+    setHasVolumetricWeight(true);
+    showToast(`Volumetric weight (${calculatedWt} kg) calculated!`, "success");
+  };
+
+  const handleVolumetricPopupCancel = () => {
+    setShowVolumetricPopup(false);
+    if (!formData.volumetric_weight) {
+      setHasVolumetricWeight(false);
+    }
+  };
+
   const handleChildPopupSubmit = async () => {
     if (!childPiecesStart || childPiecesStart.trim() === "") {
       showToast("Please enter child pieces starting number", "error");
@@ -398,6 +456,16 @@ const Booking = () => {
           invoice_amount: "",
         });
         setHasEwayBill(false);
+
+        // Reset volumetric weight calculator state
+        setHasVolumetricWeight(false);
+        setShowVolumetricPopup(false);
+        setVolumetricData({
+          height: "",
+          width: "",
+          breadth: "",
+          divisorType: "surface",
+        });
 
         // Reset form fields
         setFormData((prev) => ({
@@ -462,51 +530,12 @@ const Booking = () => {
   return (
     <div className="booking">
       <div className="booking__container">
-        
-        {/* Modern Header Banner */}
         <header className="booking__header">
           <div className="header-left">
             <h1 className="booking__title">
               {bookingType === "credit" ? "Credit Booking" : "Retail Booking"}
             </h1>
             <p className="booking__subtitle">Create and manage shipment bookings instantly</p>
-          </div>
-          
-          <div className="header-right">
-            {/* Booking Type Toggle */}
-            <div className="booking__type-toggle-group">
-              <button
-                type="button"
-                className={`toggle-btn ${bookingType === "retail" ? "active" : ""}`}
-                onClick={() => handleBookingTypeChange("retail")}
-              >
-                Retail
-              </button>
-              <button
-                type="button"
-                className={`toggle-btn ${bookingType === "credit" ? "active" : ""}`}
-                onClick={() => handleBookingTypeChange("credit")}
-              >
-                Credit
-              </button>
-            </div>
-
-            <div className="date-badge">
-              <MdDateRange className="badge-icon" />
-              <div className="date-badge-content">
-                <span className="badge-label">Booking Date</span>
-                <input
-                  id="date"
-                  name="date"
-                  type="date"
-                  className="header-date-input"
-                  value={formData.date}
-                  onChange={handleChange}
-                  ref={(el) => (inputRefs.current[1] = el)}
-                  onKeyDown={(e) => handleKeyDown(e, 1)}
-                />
-              </div>
-            </div>
           </div>
         </header>
 
@@ -545,13 +574,13 @@ const Booking = () => {
 
         {/* Two-column responsive layout */}
         <div className="booking__layout">
-          
+
           {/* Left Column: Form Details (Single Screen Compact Layout) */}
           <div className="booking__form-side">
             <form className="booking__form" onSubmit={(e) => e.preventDefault()}>
-              
+
               <div className="compact-booking-card">
-                
+
                 {/* Section 1: Document Details */}
                 <div className="compact-section">
                   <h3 className="compact-section-title">
@@ -559,7 +588,42 @@ const Booking = () => {
                     <span>Document Details</span>
                   </h3>
                   <div className="booking__form-grid booking__form-grid--document">
-                    
+
+                    <div className="form-field">
+                      <label htmlFor="date" className="form-field__label">
+                        Booking Date <span className="required">*</span>
+                      </label>
+                      <input
+                        id="date"
+                        name="date"
+                        type="date"
+                        className="form-field__input"
+                        value={formData.date}
+                        readOnly
+                        disabled
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label className="form-field__label">Booking Type</label>
+                      <div className="booking__type-toggle-group compact-toggle">
+                        <button
+                          type="button"
+                          className={`toggle-btn ${bookingType === "retail" ? "active" : ""}`}
+                          onClick={() => handleBookingTypeChange("retail")}
+                        >
+                          Retail
+                        </button>
+                        <button
+                          type="button"
+                          className={`toggle-btn ${bookingType === "credit" ? "active" : ""}`}
+                          onClick={() => handleBookingTypeChange("credit")}
+                        >
+                          Credit
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="form-field">
                       <label htmlFor="awbno" className="form-field__label">
                         AWB Number <span className="required">*</span>
@@ -639,10 +703,10 @@ const Booking = () => {
 
                 {/* Section 2: Service Details */}
                 <div className="compact-section">
-                  <h3 className="compact-section-title">
+                  {/* <h3 className="compact-section-title">
                     <MdLocalShipping className="section-icon" />
                     <span>Service Details</span>
-                  </h3>
+                  </h3> */}
                   <div className="booking__form-grid booking__form-grid--service">
 
                     <div className="form-field">
@@ -681,6 +745,72 @@ const Booking = () => {
                         onKeyDown={(e) => handleKeyDown(e, 5)}
                         min="0.001"
                       />
+                    </div>
+
+                    <div className="form-field">
+                      <label htmlFor="volumetric_weight" className="form-field__label">
+                        Volumetric Wt
+                      </label>
+                      <input
+                        id="volumetric_weight"
+                        name="volumetric_weight"
+                        type="text"
+                        className="form-field__input"
+                        placeholder="0.000"
+                        value={formData.volumetric_weight}
+                        readOnly
+                        disabled
+                      />
+                    </div>
+
+                    <div className="form-field checkbox-field-container">
+                      <div className="label-with-action">
+                        <label className="form-field__label">Calc Volumetric</label>
+                        {hasVolumetricWeight && (
+                          <button
+                            type="button"
+                            className="edit-link-btn"
+                            onClick={() => {
+                              let defaultDivisor = "surface";
+                              if (formData.mode === "AIR") {
+                                defaultDivisor = "air";
+                              }
+                              setVolumetricData(prev => ({
+                                ...prev,
+                                divisorType: prev.divisorType || defaultDivisor
+                              }));
+                              setShowVolumetricPopup(true);
+                            }}
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                      <label className="checkbox-label-styled compact-switch">
+                        <input
+                          type="checkbox"
+                          className="checkbox-input-hidden"
+                          checked={hasVolumetricWeight}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setHasVolumetricWeight(checked);
+                            if (checked) {
+                              let defaultDivisor = "surface";
+                              if (formData.mode === "AIR") {
+                                defaultDivisor = "air";
+                              }
+                              setVolumetricData(prev => ({
+                                ...prev,
+                                divisorType: prev.divisorType || defaultDivisor
+                              }));
+                              setShowVolumetricPopup(true);
+                            } else {
+                              setFormData((prev) => ({ ...prev, volumetric_weight: "" }));
+                            }
+                          }}
+                        />
+                        <span className="checkbox-custom-switch"></span>
+                      </label>
                     </div>
 
                     <div className="form-field">
@@ -742,17 +872,16 @@ const Booking = () => {
 
                 {/* Section 2: Sender Details */}
                 <div className="compact-section">
-                  <h3 className="compact-section-title">
-                    <MdPerson className="section-icon" />
-                    <span>Sender Details</span>
-                    {bookingType === "credit" && (
-                      <span className="locked-badge compact">
-                        <MdLock className="badge-icon" /> Locked (Credit Client)
-                      </span>
-                    )}
-                  </h3>
+                  {/* <h3 className="compact-section-title"> */}
+                  {/* <MdPerson className="section-icon" />
+                    <span>Sender Details</span> */}
+                  {bookingType === "credit" && (
+                    <span className="locked-badge compact">
+                      <MdLock className="badge-icon" /> Locked (Credit Client)
+                    </span>
+                  )}
+                  {/* </h3> */}
                   <div className={`booking__form-grid booking__form-grid--sender ${bookingType === "credit" ? "credit-grid" : "retail-grid"}`}>
-                    
                     {bookingType === "credit" && (
                       <div className="form-field">
                         <label htmlFor="clientSelect" className="form-field__label">
@@ -779,7 +908,7 @@ const Booking = () => {
 
                     <div className="form-field">
                       <label htmlFor="sendername" className="form-field__label">
-                        Name <span className="required">*</span>
+                        Sender Name <span className="required">*</span>
                       </label>
                       <input
                         id="sendername"
@@ -797,7 +926,7 @@ const Booking = () => {
 
                     <div className="form-field">
                       <label htmlFor="senderphone" className="form-field__label">
-                        Phone Number
+                        Sender Phone Number
                       </label>
                       <div className="input-with-icon">
                         <span className="input-prefix-icon"><MdPhone /></span>
@@ -819,14 +948,14 @@ const Booking = () => {
 
                     <div className="form-field sender-address-field">
                       <label htmlFor="senderaddress" className="form-field__label">
-                        Address
+                        Sender Address
                       </label>
                       <input
                         id="senderaddress"
                         name="senderaddress"
                         type="text"
                         className="form-field__input"
-                        placeholder={bookingType === "credit" ? "Select client" : "Sender's street address, area"}
+                        placeholder={bookingType === "credit" ? "Select client" : "Sender's address"}
                         value={formData.senderaddress}
                         onChange={handleChange}
                         ref={(el) => (inputRefs.current[10] = el)}
@@ -840,15 +969,15 @@ const Booking = () => {
 
                 {/* Section 3: Receiver Details */}
                 <div className="compact-section">
-                  <h3 className="compact-section-title">
-                    <MdLocationOn className="section-icon" />
-                    <span>Receiver Details</span>
-                  </h3>
+                  {/* <h3 className="compact-section-title"> */}
+                  {/* <MdLocationOn className="section-icon" />
+                    <span>Receiver Details</span> */}
+                  {/* </h3> */}
                   <div className="booking__form-grid booking__form-grid--receiver">
-                    
+
                     <div className="form-field">
                       <label htmlFor="receivername" className="form-field__label">
-                        Name <span className="required">*</span>
+                        Receiver Name <span className="required">*</span>
                       </label>
                       <input
                         id="receivername"
@@ -865,7 +994,7 @@ const Booking = () => {
 
                     <div className="form-field">
                       <label htmlFor="receiverphone" className="form-field__label">
-                        Phone Number
+                        Receiver Phone Number
                       </label>
                       <div className="input-with-icon">
                         <span className="input-prefix-icon"><MdPhone /></span>
@@ -886,14 +1015,14 @@ const Booking = () => {
 
                     <div className="form-field receiver-address-field">
                       <label htmlFor="receiveraddress" className="form-field__label">
-                        Address
+                        Receiver Address
                       </label>
                       <input
                         id="receiveraddress"
                         name="receiveraddress"
                         type="text"
                         className="form-field__input"
-                        placeholder="Receiver's street address, city, destination"
+                        placeholder="Receiver's address"
                         value={formData.receiveraddress}
                         onChange={handleChange}
                         ref={(el) => (inputRefs.current[13] = el)}
@@ -910,76 +1039,6 @@ const Booking = () => {
           {/* Right Column: Dynamic Label Preview & Sticky Submission Summary */}
           <div className="booking__sidebar-side">
             <div className="sticky-sidebar-container">
-              
-              {/* Dynamic Shipping Slip Preview Card */}
-              <div className="preview-label-card">
-                <div className="preview-label-header">
-                  <div className="preview-brand">FDC CARGO & COURIERS</div>
-                  <div className="preview-badge-type">
-                    {formData.doc_type === "docx" ? "DOX" : formData.doc_type === "nondocx" ? "PARCEL" : "SHIPMENT"}
-                  </div>
-                </div>
-
-                <div className="preview-barcode-section">
-                  {formData.awbno ? (
-                    <>
-                      <div className="barcode-mock-bars"></div>
-                      <div className="barcode-mock-number">{formData.awbno}</div>
-                    </>
-                  ) : (
-                    <div className="barcode-placeholder">AWB Barcode Auto-Preview</div>
-                  )}
-                </div>
-
-                <div className="preview-route-banner">
-                  <span className="route-point active">
-                    {(localStorage.getItem("hubname") || "ORIGIN").toUpperCase()}
-                  </span>
-                  <FaArrowRight className="route-arrow" />
-                  <span className="route-point active">
-                    {selectedDestName ? selectedDestName.toUpperCase() : "DESTINATION"}
-                  </span>
-                </div>
-
-                <div className="preview-details-grid">
-                  <div className="details-col">
-                    <div className="detail-item">
-                      <span className="detail-label">SENDER</span>
-                      <span className="detail-value">{formData.sendername || "---"}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">MODE</span>
-                      <span className="detail-value">
-                        {formData.mode === "AIR" ? (
-                          <span className="mode-with-icon"><FaPlane /> AIR</span>
-                        ) : formData.mode === "SURFACE" ? (
-                          <span className="mode-with-icon"><FaTruck /> SURFACE</span>
-                        ) : "---"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="details-col">
-                    <div className="detail-item">
-                      <span className="detail-label">RECEIVER</span>
-                      <span className="detail-value">{formData.receivername || "---"}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">SPECS</span>
-                      <span className="detail-value">
-                        {formData.pcs || 0} Pcs / {formData.wt || "0.000"} kg
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {hasEwayBill && (
-                  <div className="preview-eway-indicator">
-                    <FaFileInvoice className="indicator-icon" />
-                    <span>E-way Bill Details Required on Confirm</span>
-                  </div>
-                )}
-              </div>
-
               {/* Billing Details Card */}
               <div className="booking__card billing-card">
                 <h2 className="booking__section-title">
@@ -1267,6 +1326,108 @@ const Booking = () => {
                 disabled={submitLoading}
               >
                 Confirm & Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Volumetric Weight Calculator Popup */}
+      {showVolumetricPopup && (
+        <div className="popup-overlay" onClick={handleVolumetricPopupCancel}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            <div className="popup-header">
+              <h3 className="popup-title">
+                <FaWeightHanging />
+                Volumetric Weight Calculator
+              </h3>
+              <button
+                className="popup-close"
+                onClick={handleVolumetricPopupCancel}
+              >
+                <MdClose />
+              </button>
+            </div>
+
+            <div className="popup-body">
+              <div className="popup-info">
+                <p className="popup-info-text">
+                  Formula: <strong>(Height × Width × Breadth) / {getDivisorValue(volumetricData.divisorType)}</strong> (dimensions in cm)
+                </p>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label" style={{ display: "block", marginBottom: "6px", fontSize: "0.8rem", fontWeight: "600", color: "var(--neutral-text)", textTransform: "uppercase" }}>Shipment Mode / Divisor *</label>
+                <select
+                  className="form-field__select"
+                  value={volumetricData.divisorType}
+                  onChange={(e) => setVolumetricData(prev => ({ ...prev, divisorType: e.target.value }))}
+                  style={{ width: "100%", height: "38px" }}
+                >
+                  <option value="surface">Surface (5000)</option>
+                  <option value="air">Air (3000)</option>
+                  <option value="logistics">Logistics (4000)</option>
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label" style={{ display: "block", marginBottom: "6px", fontSize: "0.8rem", fontWeight: "600", color: "var(--neutral-text)", textTransform: "uppercase" }}>Height (cm) *</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  className="form-input"
+                  placeholder="Height in cm"
+                  value={volumetricData.height}
+                  onChange={(e) => setVolumetricData(prev => ({ ...prev, height: e.target.value }))}
+                  autoFocus
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label" style={{ display: "block", marginBottom: "6px", fontSize: "0.8rem", fontWeight: "600", color: "var(--neutral-text)", textTransform: "uppercase" }}>Width (cm) *</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  className="form-input"
+                  placeholder="Width in cm"
+                  value={volumetricData.width}
+                  onChange={(e) => setVolumetricData(prev => ({ ...prev, width: e.target.value }))}
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label" style={{ display: "block", marginBottom: "6px", fontSize: "0.8rem", fontWeight: "600", color: "var(--neutral-text)", textTransform: "uppercase" }}>Breadth (cm) *</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  className="form-input"
+                  placeholder="Breadth in cm"
+                  value={volumetricData.breadth}
+                  onChange={(e) => setVolumetricData(prev => ({ ...prev, breadth: e.target.value }))}
+                />
+              </div>
+
+              <div className="calculated-result-box" style={{ background: "hsl(210, 40%, 96%)", border: "1.5px solid var(--border-color)", padding: "14px", borderRadius: "10px", textAlign: "center", marginTop: "20px" }}>
+                <span style={{ display: "block", fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", color: "hsl(215, 16%, 47%)", marginBottom: "4px" }}>Calculated Weight</span>
+                <strong style={{ fontSize: "1.25rem", color: "var(--primary)", fontWeight: "800" }}>{calculateVolumetricWeight()} kg</strong>
+              </div>
+            </div>
+
+            <div className="popup-footer">
+              <button
+                className="btn-cancel"
+                onClick={handleVolumetricPopupCancel}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-submit"
+                onClick={handleVolumetricPopupConfirm}
+              >
+                Apply Weight
               </button>
             </div>
           </div>
