@@ -1,3 +1,33 @@
+html {
+  font-size: 16px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.1), (min-resolution: 105dpi) {
+  html {
+    font-size: 14px;
+  }
+}
+@media (-webkit-min-device-pixel-ratio: 1.25), (min-resolution: 120dpi) {
+  html {
+    font-size: 12.8px;
+  }
+}
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+  html {
+    font-size: 10.6px;
+  }
+}
+@media (-webkit-min-device-pixel-ratio: 1.75), (min-resolution: 168dpi) {
+  html {
+    font-size: 9.1px;
+  }
+}
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  html {
+    font-size: 8px;
+  }
+}
+
 :root {
   --primary: hsl(142, 72%, 29%);
   --primary-hover: hsl(142, 72%, 22%);
@@ -313,14 +343,14 @@
 
 .booking__form-grid--document {
   display: grid;
-  grid-template-columns: 1.5fr 1.2fr 1.2fr 0.8fr;
+  grid-template-columns: 1.2fr 1.3fr 1.3fr 1.2fr 1.2fr 0.8fr;
   align-items: end;
   gap: 16px;
 }
 
 .booking__form-grid--service {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 2.5fr;
+  grid-template-columns: 1fr 1fr 1fr 1.1fr 1fr 1fr 2.5fr;
   align-items: end;
   gap: 16px;
 }
@@ -349,6 +379,31 @@
   align-items: center;
   justify-content: flex-end;
   height: 100%;
+}
+
+.label-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.edit-link-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--primary);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  margin-left: 4px;
+}
+
+.edit-link-btn:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
 }
 
 .checkbox-label-styled.compact-switch {
@@ -1089,6 +1144,31 @@
   border-radius: 12px;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
+}
+
+.booking__type-toggle-group.compact-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 2px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  height: 38px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.booking__type-toggle-group.compact-toggle .toggle-btn {
+  flex: 1;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .toggle-btn {
